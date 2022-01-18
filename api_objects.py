@@ -20,4 +20,4 @@ class meditation_session(BaseModel):
 class book_reading_session(BaseModel):
     title: str
     reading_length: float
-    page_difference: int
+    page_difference: float

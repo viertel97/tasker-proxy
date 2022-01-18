@@ -32,7 +32,7 @@ def track_habit(selected_service):
     database = helper.get_value("habit_tracker", "name", DATABASES)
     page = habit_tracker_notion.get_page_for_date(
         datetime.today(),
-        database,
+        database["id"],
     )
     habit_tracker_notion.update_notion_habit_tracker_page(page, selected_service)
 
@@ -41,7 +41,7 @@ def track_book_reading_habit(item):
     database = helper.get_value("habit_tracker", "name", DATABASES)
     page = habit_tracker_notion.get_page_for_date(
         get_date(),
-        database,
+        database["id"],
     )
     habit_tracker_notion.book_reading_update_notion_habit_tracker_page(page, item)
 
@@ -50,7 +50,7 @@ def track_ebook_reading_habit(item):
     database = helper.get_value("habit_tracker", "name", DATABASES)
     page = habit_tracker_notion.get_page_for_date(
         get_date(),
-        database,
+        database["id"],
     )
     habit_tracker_notion.ebook_reading_update_notion_habit_tracker_page(page, item)
 
@@ -59,6 +59,6 @@ def track_mediation_habit(item):
     database = helper.get_value("habit_tracker", "name", DATABASES)
     page = habit_tracker_notion.get_page_for_date(
         get_date(),
-        database,
+        database["id"],
     )
     habit_tracker_notion.meditation_update_notion_habit_tracker_page(page, item)

@@ -8,6 +8,7 @@ from loguru import logger
 
 import helper
 from api_objects import book_reading_session, meditation_session
+from apis import TODOIST_API
 from habit_tracker import (
     track_book_reading_habit,
     track_ebook_reading_habit,
@@ -21,7 +22,6 @@ app = FastAPI()
 proxy_mapping_dict = helper.get_config("tasker_mapping.json")
 habit_tracker_mapping_dict = helper.get_config("habit_tracker_mapping.json")
 
-api = todoist.TodoistAPI(os.environ["TODOIST_TOKEN"])
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -36,7 +36,7 @@ logger.add(
 def proxy(service: str):
     logger.info("service: " + service)
     selected_service = proxy_mapping_dict[service]
-    todoist_proxy(selected_service, api)
+    todoist_proxy(selected_service)
 
 
 @logger.catch

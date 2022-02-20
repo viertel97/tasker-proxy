@@ -1,19 +1,18 @@
 import os
 import platform
 
-import todoist
 import uvicorn
 from fastapi import FastAPI
 from loguru import logger
 
+import api_objects
 import helper
-from api_objects import book_reading_session, meditation_session
 from apis import TODOIST_API
 from habit_tracker import (
-    track_book_reading_habit,
-    track_ebook_reading_habit,
     track_habit,
     track_mediation_habit,
+    track_reading_habit,
+    track_standup,
 )
 from proxy import todoist_proxy
 
@@ -49,20 +48,20 @@ def habit_tracker(service: str):
 
 @logger.catch
 @app.post("/habit-tracker/meditation")
-def test(item: meditation_session):
+def test(item: api_objects.meditation_session):
     track_mediation_habit(item)
 
 
 @logger.catch
-@app.post("/habit-tracker/book-reading")
-def test(item: book_reading_session):
-    track_book_reading_habit(item)
+@app.post("/habit-tracker/reading")
+def test(item: api_objects.reading_session):
+    track_reading_habit(item)
 
 
 @logger.catch
-@app.post("/habit-tracker/ebook-reading")
-def test(item: book_reading_session):
-    track_ebook_reading_habit(item)
+@app.post("/habit-tracker/wakeup")
+def test(item: api_objects.wakeup):
+    track_standup(item)
 
 
 @app.get("/proxy")

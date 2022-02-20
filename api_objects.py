@@ -17,7 +17,12 @@ class meditation_session(BaseModel):
     yoga_seconds: int
 
 
-class book_reading_session(BaseModel):
+class reading_session(BaseModel):
     title: str
     reading_length: float
     page_difference: float
+    reading_type: str
+
+
+class wakeup(BaseModel):
+    counter: int

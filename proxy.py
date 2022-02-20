@@ -48,5 +48,6 @@ def todoist_proxy(selected_service):
             "timezone": None,
         }
         api_item.update(due=due)
+    logger.info("Todoist Queue:")
     logger.info(TODOIST_API.queue)
     TODOIST_API.commit()

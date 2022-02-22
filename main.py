@@ -59,8 +59,8 @@ def test(item: api_objects.reading_session):
 
 
 @logger.catch
-@app.post("/habit-tracker/wakeup")
-def test(item: api_objects.wakeup):
+@app.post("/habit-tracker/standup")
+def test(item: api_objects.standup):
     track_standup(item)
 
 

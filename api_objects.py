@@ -24,5 +24,5 @@ class reading_session(BaseModel):
     reading_type: str
 
 
-class wakeup(BaseModel):
-    counter: int
+class standup(BaseModel):
+    duration: float

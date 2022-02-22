@@ -120,8 +120,8 @@ def update_notion_habit_tracker_page(page, completed_habit):
     logger.info("'" + completed_habit + "' checked on page '" + page.id + "'")
 
 
-def standup_update_notion_habit_tracker_page(page, standup: api_objects.wakeup):
+def standup_update_notion_habit_tracker_page(page, standup: api_objects.standup):
     url = base_url + "pages/" + page.id
-    data = {"properties": {"Stand-Up-Counter": {"number": standup.counter}}}
+    data = {"properties": {"Stand-Up-Time": {"number": standup.duration}}}
     r = requests.patch(url, data=json.dumps(data), headers=headers).json()
     logger.info("'standup' filled on page '" + page.id + "'")

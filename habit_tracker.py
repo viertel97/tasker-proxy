@@ -3,8 +3,10 @@ from datetime import datetime, time, timedelta
 
 from loguru import logger
 
+import api_objects
 import habit_tracker_notion
 import helper
+from apis import add_reading_other_task
 
 END_TIME = time(hour=6, minute=0, second=0)
 
@@ -37,12 +39,14 @@ def track_habit(selected_service):
     habit_tracker_notion.update_notion_habit_tracker_page(page, selected_service)
 
 
-def track_reading_habit(item):
+def track_reading_habit(item: api_objects.reading_session):
     database = helper.get_value("habit_tracker", "name", DATABASES)
     page = habit_tracker_notion.get_page_for_date(
         get_date(),
         database["id"],
     )
+    if item.reading_type != "Book" and item.reading_type != "eBook":
+        add_reading_other_task(item.title)
     habit_tracker_notion.book_reading_update_notion_habit_tracker_page(page, item)
 
 

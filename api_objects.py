@@ -22,6 +22,7 @@ class reading_session(BaseModel):
     reading_length: float
     page_difference: float
     reading_type: str
+    finished: bool
 
 
 class standup(BaseModel):

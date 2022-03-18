@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from loguru import logger
 from pydantic import BaseModel
@@ -22,7 +23,7 @@ class reading_session(BaseModel):
     reading_length: float
     page_difference: float
     reading_type: str
-    finished: bool
+    finished: Optional[bool] = False
 
 
 class standup(BaseModel):

@@ -44,6 +44,8 @@ def habit_tracker(service: str):
     logger.info("habit-tracker: " + service)
     selected_service = habit_tracker_mapping_dict[service]
     track_habit(selected_service)
+    selected_service = proxy_mapping_dict["sport"]
+    todoist_proxy(selected_service)
 
 
 @logger.catch

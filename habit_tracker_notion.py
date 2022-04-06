@@ -50,14 +50,14 @@ def get_previous_rich_text_content(page, property):
     return content
 
 
-def book_reading_update_notion_habit_tracker_page(page, item):
+def book_reading_update_notion_habit_tracker_page(page, item: api_objects.reading_session):
     url = base_url + "pages/" + page.id
     data = get_rich_text_data(page, item)
     r = requests.patch(url, data=json.dumps(data), headers=headers).json()
     logger.info("'book read' filled on page '" + page.id + "'")
 
 
-def meditation_update_notion_habit_tracker_page(page, item):
+def meditation_update_notion_habit_tracker_page(page, item: api_objects.meditation_session):
     url = base_url + "pages/" + page.id
     data = get_rich_text_data(page, item)
     r = requests.patch(url, data=json.dumps(data), headers=headers).json()
@@ -117,11 +117,15 @@ def update_notion_habit_tracker_page(page, completed_habit):
     url = base_url + "pages/" + page.id
     data = get_multi_select_data(page, completed_habit)
     r = requests.patch(url, data=json.dumps(data), headers=headers).json()
-    logger.info("'" + completed_habit + "' checked on page '" + page.id + "'")
+    logger.info(
+        "'timer' ({completed_habit}) checked on page {page_id}'".format(
+            completed_habit=completed_habit, page_id=page.id
+        )
+    )
 
 
-def standup_update_notion_habit_tracker_page(page, standup: api_objects.standup):
+def timer_update_notion_habit_tracker_page(page, timer: api_objects.timer):
     url = base_url + "pages/" + page.id
-    data = {"properties": {"Stand-Up-Time": {"number": standup.duration}}}
+    data = {"properties": {timer.context: {"number": timer.duration}}}
     r = requests.patch(url, data=json.dumps(data), headers=headers).json()
-    logger.info("'standup' filled on page '" + page.id + "'")
+    logger.info("'timer' ({context}) filled on page {page_id}'".format(context=timer.context, page_id=page.id))

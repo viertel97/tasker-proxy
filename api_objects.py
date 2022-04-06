@@ -26,5 +26,6 @@ class reading_session(BaseModel):
     finished: Optional[bool] = False
 
 
-class standup(BaseModel):
+class timer(BaseModel):
+    context: str
     duration: float

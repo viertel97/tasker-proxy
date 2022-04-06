@@ -12,7 +12,7 @@ from habit_tracker import (
     track_habit,
     track_mediation_habit,
     track_reading_habit,
-    track_standup,
+    track_time,
 )
 from proxy import todoist_proxy
 
@@ -61,9 +61,9 @@ def test(item: api_objects.reading_session):
 
 
 @logger.catch
-@app.post("/habit-tracker/standup")
-def test(item: api_objects.standup):
-    track_standup(item)
+@app.post("/habit-tracker/timer")
+def test(item: api_objects.timer):
+    track_time(item)
 
 
 @app.get("/proxy")

@@ -1,5 +1,6 @@
 import os
 import platform
+from json import JSONDecodeError
 
 import uvicorn
 from fastapi import APIRouter, Depends, FastAPI, Request
@@ -31,16 +32,21 @@ logger.add(
 
 async def log_request_info(request: Request):
     logger.debug(f"{request.method} {request.url}")
-    logger.debug("Params:")
-    for name, value in request.path_params.items():
-        logger.debug(f"\t{name}: {value}")
-    logger.debug("Headers:")
-    for name, value in request.headers.items():
-        logger.debug(f"\t{name}: {value}")
+    if request.path_params.items():
+        logger.debug("Params:")
+        for name, value in request.path_params.items():
+            logger.debug(f"\t{name}: {value}")
+    if request.headers.items():
+        logger.debug("Headers:")
+        for name, value in request.headers.items():
+            logger.debug(f"\t{name}: {value}")
     logger.debug("Body:")
-    request_body = await request.json()
-    for key in request_body.keys():
-        logger.debug(f"\t{key}: {request_body[key]}")
+    try:
+        request_body = await request.json()
+        for key in request_body.keys():
+            logger.debug(f"\t{key}: {request_body[key]}")
+    except JSONDecodeError:
+        logger.debug("Empty body")
 
 
 @logger.catch
@@ -63,19 +69,19 @@ async def habit_tracker(service: str):
 
 @logger.catch
 @router.post("/habit-tracker/meditation")
-async def test(item: api_objects.meditation_session):
+async def track_meditation(item: api_objects.meditation_session):
     track_mediation_habit(item)
 
 
 @logger.catch
 @router.post("/habit-tracker/reading")
-async def test(item: api_objects.reading_session):
+async def track_reading(item: api_objects.reading_session):
     track_reading_habit(item)
 
 
 @logger.catch
 @router.post("/habit-tracker/timer")
-async def test(item: api_objects.timer):
+async def track_timer(item: api_objects.timer):
     track_time(item)
 
 

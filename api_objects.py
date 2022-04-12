@@ -16,6 +16,11 @@ class meditation_session(BaseModel):
     warm_up_seconds: int
     meditation_seconds: int
     yoga_seconds: int
+    morning_meditation: bool = False
+    meditation_start_ms: int
+    meditation_end_ms: int
+    yoga_start_ms: int
+    yoga_end_ms: int
 
 
 class reading_session(BaseModel):
@@ -24,6 +29,8 @@ class reading_session(BaseModel):
     page_difference: float
     reading_type: str
     finished: Optional[bool] = False
+    reading_start_ms: int
+    reading_end_ms: int
 
 
 class timer(BaseModel):

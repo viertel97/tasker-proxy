@@ -46,7 +46,7 @@ def get_page_for_date(date, database_id):
 def get_previous_rich_text_content(page, property):
     content = ""
     if len(page[property]) > 0:
-        content = page[property][0]["plain_text"] + " / "
+        content = page[property][0]["plain_text"]
     return content
 
 
@@ -65,24 +65,39 @@ def meditation_update_notion_habit_tracker_page(page, item: api_objects.meditati
 
 
 def get_meditation_data(page, item: api_objects.meditation_session):
-    content = get_previous_rich_text_content(page, "properties~Meditation~rich_text")
-    content += "{warm_up_seconds} | {meditation_seconds} | {yoga_seconds}".format(
-        warm_up_seconds=item.warm_up_seconds,
-        meditation_seconds=item.meditation_seconds,
-        yoga_seconds=item.yoga_seconds,
-    )
-    return {"properties": {"Meditation": {"rich_text": [{"type": "text", "text": {"content": content}}]}}}
+    previous_data = get_previous_rich_text_content(page, "properties~Meditation~rich_text")
+    content_list = json.loads(previous_data) if previous_data else []
+
+    content_dict = {}
+    content_dict["warm_up_seconds"] = item.warm_up_seconds
+    content_dict["meditation_seconds"] = item.meditation_seconds
+    content_dict["yoga_seconds"] = item.yoga_seconds
+    content_dict["time_of_day"] = "morning" if item.morning_meditation else "evening"
+    content_dict["meditation_start_ms"] = item.meditation_start_ms
+    content_dict["meditation_end_ms"] = item.meditation_end_ms
+    content_dict["yoga_start_ms"] = item.yoga_start_ms
+    content_dict["yoga_end_ms"] = item.yoga_end_ms
+
+    content_list.append(content_dict)
+    content_json = json.dumps(content_list, indent=4)
+    return {"properties": {"Meditation": {"rich_text": [{"type": "text", "text": {"content": content_json}}]}}}
 
 
 def get_reading_data(page, item: api_objects.reading_session):
-    content = get_previous_rich_text_content(page, "properties~Reading~rich_text")
-    content += "{type} | {reading_length}s | {page_difference} pages | {title}".format(
-        type=item.reading_type,
-        page_difference=item.page_difference,
-        title=item.title,
-        reading_length=item.reading_length,
-    )
-    return {"properties": {"Reading": {"rich_text": [{"type": "text", "text": {"content": content}}]}}}
+    previous_data = get_previous_rich_text_content(page, "properties~Reading~rich_text")
+    content_list = json.loads(previous_data) if previous_data else []
+
+    content_dict = {}
+    content_dict["reading_type"] = item.reading_type
+    content_dict["page_difference"] = item.page_difference
+    content_dict["title"] = item.title
+    content_dict["reading_length"] = item.reading_length
+    content_dict["reading_start_ms"] = item.reading_start_ms
+    content_dict["reading_end_ms"] = item.reading_end_ms
+
+    content_list.append(content_dict)
+    content_json = json.dumps(content_list, indent=4, ensure_ascii=False)
+    return {"properties": {"Reading": {"rich_text": [{"type": "text", "text": {"content": content_json}}]}}}
 
 
 def get_rich_text_data(page, item):

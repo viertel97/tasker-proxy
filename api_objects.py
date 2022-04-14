@@ -13,9 +13,9 @@ logger.add(
 
 
 class meditation_session(BaseModel):
-    warm_up_seconds: int
-    meditation_seconds: int
-    yoga_seconds: int
+    warm_up_seconds: float
+    meditation_seconds: float
+    yoga_seconds: float
     morning_meditation: bool = False
     meditation_start_ms: int
     meditation_end_ms: int
@@ -36,3 +36,5 @@ class reading_session(BaseModel):
 class timer(BaseModel):
     context: str
     duration: float
+    start_ms: int
+    end_ms: int

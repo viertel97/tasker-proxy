@@ -141,6 +141,17 @@ def update_notion_habit_tracker_page(page, completed_habit):
 
 def timer_update_notion_habit_tracker_page(page, timer: api_objects.timer):
     url = base_url + "pages/" + page.id
-    data = {"properties": {timer.context: {"number": timer.duration}}}
+    data = get_timer_data(timer)
     r = requests.patch(url, data=json.dumps(data), headers=headers).json()
     logger.info("'timer' ({context}) filled on page {page_id}'".format(context=timer.context, page_id=page.id))
+
+
+def get_timer_data(item: api_objects.timer):
+    content_dict = {}
+    content_dict["duration"] = item.duration
+    content_dict["context"] = item.context
+    content_dict["start_ms"] = item.start_ms
+    content_dict["end_ms"] = item.end_ms
+
+    content_json = json.dumps(content_dict, indent=4)
+    return {"properties": {item.context: {"rich_text": [{"type": "text", "text": {"content": content_json}}]}}}

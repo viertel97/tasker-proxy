@@ -70,19 +70,31 @@ async def habit_tracker(service: str):
 @logger.catch
 @router.post("/habit-tracker/meditation")
 async def track_meditation(item: api_objects.meditation_session):
-    track_mediation_habit(item)
+    try:
+        track_mediation_habit(item)
+    except Exception as e:
+        logger.error(e)
+        track_mediation_habit(item)
 
 
 @logger.catch
 @router.post("/habit-tracker/reading")
 async def track_reading(item: api_objects.reading_session):
-    track_reading_habit(item)
+    try:
+        track_reading_habit(item)
+    except Exception as e:
+        logger.error(e)
+        track_reading_habit(item)
 
 
 @logger.catch
 @router.post("/habit-tracker/timer")
 async def track_timer(item: api_objects.timer):
-    track_time(item)
+    try:
+        track_time(item)
+    except Exception as e:
+        logger.error(e)
+        track_time(item)
 
 
 @app.get("/proxy")

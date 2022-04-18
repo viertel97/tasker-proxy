@@ -19,11 +19,12 @@ from apis import TODOIST_API, get_list
 
 
 def todoist_proxy(selected_service):
+    TODOIST_API.sync()
+
     df_items = pd.DataFrame(get_list("items"))
     item = df_items[df_items.content == selected_service].sample(1).iloc[0]
     logger.info(item)
 
-    TODOIST_API.sync()
     api_item = TODOIST_API.items.get_by_id(int(item["id"]))
     api_item.close()
 

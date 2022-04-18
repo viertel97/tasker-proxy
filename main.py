@@ -72,6 +72,8 @@ async def habit_tracker(service: str):
 async def track_meditation(item: api_objects.meditation_session):
     try:
         track_mediation_habit(item)
+        selected_service = proxy_mapping_dict["meditation-evening"]
+        todoist_proxy(selected_service)
     except Exception as e:
         logger.error(e)
         track_mediation_habit(item)
@@ -82,6 +84,8 @@ async def track_meditation(item: api_objects.meditation_session):
 async def track_reading(item: api_objects.reading_session):
     try:
         track_reading_habit(item)
+        selected_service = proxy_mapping_dict["reading"]
+        todoist_proxy(selected_service)
     except Exception as e:
         logger.error(e)
         track_reading_habit(item)

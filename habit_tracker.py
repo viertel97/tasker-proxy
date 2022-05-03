@@ -14,14 +14,24 @@ END_TIME = time(hour=6, minute=0, second=0)
 DATABASES = helper.get_config("databases_config.json")
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
 )
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
@@ -42,7 +52,9 @@ def track_habit(selected_service):
         datetime.today(),
         database["id"],
     )
-    habit_tracker_notion.update_notion_habit_tracker_page(page, selected_service)
+    habit_tracker_notion.update_notion_habit_tracker_page(
+        page, selected_service
+    )
 
 
 def track_reading_habit(item: api_objects.reading_session):
@@ -53,7 +65,9 @@ def track_reading_habit(item: api_objects.reading_session):
     )
     if item.reading_type != "Book" and item.reading_type != "eBook":
         add_reading_other_task(item.title, item.finished)
-    habit_tracker_notion.book_reading_update_notion_habit_tracker_page(page, item)
+    habit_tracker_notion.book_reading_update_notion_habit_tracker_page(
+        page, item
+    )
 
 
 def track_mediation_habit(item: api_objects.meditation_session):
@@ -62,30 +76,20 @@ def track_mediation_habit(item: api_objects.meditation_session):
         get_date(),
         database["id"],
     )
-    habit_tracker_notion.meditation_update_notion_habit_tracker_page(page, item)
+    habit_tracker_notion.meditation_update_notion_habit_tracker_page(
+        page, item
+    )
 
 
 def track_time(item: api_objects.timer):
     database = helper.get_value("habit_tracker", "name", DATABASES)
-    if item.context == "standup":
-        item.context = "Stand-Up-Time"
-        track_standup(database, item)
-    elif item.context == "charge_time":
-        item.context = "Time-Before-Charging"
-        track_charge_time(database, item)
-
-
-def track_standup(database, item: api_objects.timer):
-    page = habit_tracker_notion.get_page_for_date(
-        get_date(),
-        database["id"],
+    date = (
+        get_date() - timedelta(days=1)
+        if item.context == "Time-Before-Charging"
+        else get_date()
     )
-    habit_tracker_notion.timer_update_notion_habit_tracker_page(page, item)
-
-
-def track_charge_time(database, item: api_objects.timer):
     page = habit_tracker_notion.get_page_for_date(
-        get_date() - timedelta(days=1),
+        date,
         database["id"],
     )
     habit_tracker_notion.timer_update_notion_habit_tracker_page(page, item)

@@ -6,7 +6,7 @@ from loguru import logger
 import api_objects
 import habit_tracker_notion
 import helper
-from apis import add_reading_other_task
+from apis import add_reading_finished_task
 
 END_TIME = time(hour=6, minute=0, second=0)
 
@@ -63,8 +63,8 @@ def track_reading_habit(item: api_objects.reading_session):
         get_date(),
         database["id"],
     )
-    if item.reading_type != "Book" and item.reading_type != "eBook":
-        add_reading_other_task(item.title, item.finished)
+    if item.finished:
+        add_reading_finished_task(item)
     habit_tracker_notion.book_reading_update_notion_habit_tracker_page(
         page, item
     )
@@ -93,3 +93,7 @@ def track_time(item: api_objects.timer):
         database["id"],
     )
     habit_tracker_notion.timer_update_notion_habit_tracker_page(page, item)
+
+
+def track_list():
+    print("")

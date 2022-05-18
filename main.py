@@ -1,15 +1,19 @@
+import logging
 import os
 import platform
-from json import JSONDecodeError
+from json import JSONDecodeError, loads
 
 import uvicorn
-from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from loguru import logger
 
 import api_objects
 import helper
 from habit_tracker import (
     track_habit,
+    track_list,
     track_mediation_habit,
     track_reading_habit,
     track_time,
@@ -20,14 +24,33 @@ app = FastAPI(debug=True)
 router = APIRouter()
 
 proxy_mapping_dict = helper.get_config("tasker_mapping.json")
-habit_tracker_mapping_dict = helper.get_config("habit_tracker_mapping.json")
+habit_tracker_mapping_dict = helper.get_config(
+    "habit_tracker_mapping.json"
+)
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
+    exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
+    logging.error(f"{request}: {exc_str}")
+    content = {"status_code": 10422, "message": exc_str, "data": None}
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 async def log_request_info(request: Request):
@@ -43,10 +66,20 @@ async def log_request_info(request: Request):
     logger.debug("Body:")
     try:
         request_body = await request.json()
-        for key in request_body.keys():
-            logger.debug(f"\t{key}: {request_body[key]}")
+        try:
+            request_body = loads(request_body)
+        except Exception:
+            pass
+        if isinstance(request_body, list):
+            for item in request_body:
+                for key in item.keys():
+                    logger.debug(f"\t{key}: {item[key]}")
+        else:
+            for key in request_body.keys():
+                logger.debug(f"\t{key}: {request_body[key]}")
+
     except JSONDecodeError:
-        logger.debug("Empty body")
+        logger.debug("Wrong Empty body")
 
 
 @logger.catch
@@ -65,6 +98,16 @@ async def habit_tracker(service: str):
     track_habit(selected_service)
     selected_service = proxy_mapping_dict["sport"]
     todoist_proxy(selected_service)
+
+
+@logger.catch
+@router.post("/habit-tracker/list")
+async def track_list(request: Request):
+    try:
+        item = await request.json()
+        track_list(item)
+    except Exception as e:
+        logger.error(e)
 
 
 @logger.catch

@@ -1,11 +1,16 @@
 import os
-from typing import Optional
+from typing import List, Optional
 
 from loguru import logger
 from pydantic import BaseModel
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
@@ -38,3 +43,7 @@ class timer(BaseModel):
     duration: float
     start_ms: int
     end_ms: int
+
+
+class list_item(BaseModel):
+    objects: List[dict]

@@ -25,13 +25,17 @@ def get_list(list_name):
     return [item.data for item in TODOIST_API.state[list_name]]
 
 
-def add_reading_other_task(item: reading_session):
+def add_reading_finished_task(item: reading_session):
     TODOIST_API.sync()
-    content = "'{other}' in Zotero & Obsidian einpflegen + eBook Reader updaten".format(
-        other=item.title
+    TODOIST_API.items.add(
+        "'{other}' in Zotero & Obsidian einpflegen".format(
+            other=item.title
+        ),
+        project_id="2244725398",
+        due={"string": "Tomorrow"},
     )
-    item = TODOIST_API.items.add(
-        content,
+    TODOIST_API.items.add(
+        "eBook Reader updaten",
         project_id="2244725398",
         due={"string": "Tomorrow"},
     )

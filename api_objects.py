@@ -30,7 +30,9 @@ class meditation_session(BaseModel):
 
 class reading_session(BaseModel):
     title: str
-    reading_length: float
+    reading_seconds: float
+    page_old: int
+    page_new: int
     page_difference: float
     reading_type: str
     finished: Optional[bool] = False

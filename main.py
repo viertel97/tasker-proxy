@@ -14,9 +14,9 @@ import helper
 from habit_tracker import (
     track_habit,
     track_list,
-    track_mediation_habit,
-    track_reading_habit,
-    track_time,
+    track_meditation_habit_db,
+    track_reading_habit_db,
+    track_time_db,
 )
 from proxy import todoist_proxy
 
@@ -24,17 +24,10 @@ app = FastAPI(debug=True)
 router = APIRouter()
 
 proxy_mapping_dict = helper.get_config("tasker_mapping.json")
-habit_tracker_mapping_dict = helper.get_config(
-    "habit_tracker_mapping.json"
-)
+habit_tracker_mapping_dict = helper.get_config("habit_tracker_mapping.json")
 
 logger.add(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__))
-        + "/logs/"
-        + os.path.basename(__file__)
-        + ".log"
-    ),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
@@ -42,15 +35,11 @@ logger.add(
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(
-    request: Request, exc: RequestValidationError
-):
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
     logging.error(f"{request}: {exc_str}")
     content = {"status_code": 10422, "message": exc_str, "data": None}
-    return JSONResponse(
-        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
+    return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 async def log_request_info(request: Request):
@@ -113,35 +102,23 @@ async def track_list(request: Request):
 @logger.catch
 @router.post("/habit-tracker/meditation")
 async def track_meditation(item: api_objects.meditation_session):
-    try:
-        track_mediation_habit(item)
-        selected_service = proxy_mapping_dict["meditation-evening"]
-        todoist_proxy(selected_service)
-    except Exception as e:
-        logger.error(e)
-        track_mediation_habit(item)
+    track_meditation_habit_db(item)
+    selected_service = proxy_mapping_dict["meditation-evening"]
+    todoist_proxy(selected_service)
 
 
 @logger.catch
 @router.post("/habit-tracker/reading")
 async def track_reading(item: api_objects.reading_session):
-    try:
-        track_reading_habit(item)
-        selected_service = proxy_mapping_dict["reading"]
-        todoist_proxy(selected_service)
-    except Exception as e:
-        logger.error(e)
-        track_reading_habit(item)
+    track_reading_habit_db(item)
+    selected_service = proxy_mapping_dict["reading"]
+    todoist_proxy(selected_service)
 
 
 @logger.catch
 @router.post("/habit-tracker/timer")
 async def track_timer(item: api_objects.timer):
-    try:
-        track_time(item)
-    except Exception as e:
-        logger.error(e)
-        track_time(item)
+    track_time_db(item)
 
 
 @app.get("/proxy")

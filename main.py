@@ -12,11 +12,13 @@ from loguru import logger
 import api_objects
 import helper
 from habit_tracker import (
+    track_ght_db,
     track_habit,
     track_list,
     track_meditation_habit_db,
     track_reading_habit_db,
     track_time_db,
+    track_yoga_habit_db,
 )
 from proxy import todoist_proxy
 
@@ -80,13 +82,27 @@ async def proxy(service: str):
 
 
 @logger.catch
+@router.post("/habit-tracker/drink")
+async def get_drink(request: Request):
+    ght_data = await request.json()
+    logger.info("service: " + str(ght_data))
+
+
+@logger.catch
+@router.post("/habit-tracker/ght")
+async def get_body(request: Request):
+    ght_data = await request.json()
+    logger.info("service: " + str(ght_data))
+    track_ght_db(ght_data)
+
+
+@logger.catch
 @router.post("/habit-tracker/sport/{service}")
 async def habit_tracker(service: str):
     logger.info("habit-tracker: " + service)
-    selected_service = habit_tracker_mapping_dict[service]
-    track_habit(selected_service)
-    selected_service = proxy_mapping_dict["sport"]
-    todoist_proxy(selected_service)
+    service = habit_tracker_mapping_dict[service]
+    track_habit(service)
+    todoist_proxy(proxy_mapping_dict["sport"])
 
 
 @logger.catch
@@ -102,9 +118,16 @@ async def track_list(request: Request):
 @logger.catch
 @router.post("/habit-tracker/meditation")
 async def track_meditation(item: api_objects.meditation_session):
-    track_meditation_habit_db(item)
-    selected_service = proxy_mapping_dict["meditation-evening"]
-    todoist_proxy(selected_service)
+    error_flag = track_meditation_habit_db(item)
+    if not error_flag:
+        selected_service = proxy_mapping_dict["meditation-evening"]
+        # todoist_proxy(selected_service)
+
+
+@logger.catch
+@router.post("/habit-tracker/yoga")
+async def track_meditation(item: api_objects.yoga_session):
+    track_yoga_habit_db(item)
 
 
 @logger.catch

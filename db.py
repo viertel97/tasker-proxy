@@ -37,9 +37,17 @@ def add_timer(item: api_objects.timer):
     connection = create_server_connection()
     try:
         with connection.cursor() as cursor:
-            values = tuple((item.context, item.start_ms, item.end_ms))
+            values = tuple(
+                (
+                    item.context,
+                    item.start,
+                    item.start.tzinfo.utcoffset(item.start).seconds,
+                    item.end,
+                    item.end.tzinfo.utcoffset(item.end).seconds,
+                )
+            )
             cursor.execute(
-                "INSERT INTO timer (context, start_ms, end_ms) VALUES (%s, %s, %s)",
+                "INSERT INTO timer (context, start, start_offset, end, end_offset) VALUES (%s, %s, %s, %s, %s)",
                 values,
             )
             connection.commit()
@@ -55,17 +63,18 @@ def add_reading_session(item: api_objects.reading_session):
             values = tuple(
                 (
                     item.title,
-                    item.reading_seconds,
+                    item.start,
+                    item.start.tzinfo.utcoffset(item.start).seconds,
+                    item.end,
+                    item.end.tzinfo.utcoffset(item.end).seconds,
                     item.page_old,
                     item.page_new,
                     item.reading_type,
                     item.finished,
-                    item.reading_start_ms,
-                    item.reading_end_ms,
                 )
             )
             cursor.execute(
-                "INSERT INTO reading (title, reading_seconds, page_old, page_new, reading_type, finished, reading_start_ms, reading_end_ms) VALUES (%s, %s, %s, %s, %s,%s, %s, %s)",
+                "INSERT INTO reading (title, start, start_offset, end, end_offset, page_old, page_new, reading_type, finished) VALUES (%s, %s, %s, %s,%s, %s, %s, %s, %s)",
                 values,
             )
             connection.commit()
@@ -75,26 +84,63 @@ def add_reading_session(item: api_objects.reading_session):
 
 
 def add_meditation_session(item: api_objects.meditation_session):
+    error_flag = False
     connection = create_server_connection()
     try:
         with connection.cursor() as cursor:
             values = tuple(
                 (
-                    item.warm_up_seconds,
-                    item.meditation_seconds,
-                    item.yoga_seconds,
-                    item.morning_meditation,
-                    item.meditation_start_ms,
-                    item.meditation_end_ms,
-                    item.yoga_start_ms,
-                    item.yoga_end_ms,
+                    item.meditation_start,
+                    item.meditation_start.tzinfo.utcoffset(item.meditation_start).seconds,
+                    item.meditation_end,
+                    item.meditation_end.tzinfo.utcoffset(item.meditation_end).seconds,
                 )
             )
             cursor.execute(
-                "INSERT INTO meditation (warm_up_seconds, meditation_seconds, yoga_seconds, morning_meditation, meditation_start_ms, meditation_end_ms, yoga_start_ms, yoga_end_ms) VALUES (%s, %s, %s, %s, %s,%s, %s, %s)",
+                "INSERT INTO meditation (meditation_start, start_offset, meditation_end, end_offset) VALUES (%s, %s, %s, %s)",
                 values,
             )
             connection.commit()
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
+        error_flag = True
+    close_server_connection(connection)
+    return error_flag
+
+
+def add_yoga_session(item: api_objects.yoga_session):
+    connection = create_server_connection()
+    try:
+        with connection.cursor() as cursor:
+            values = tuple(
+                (
+                    item.start,
+                    item.start.tzinfo.utcoffset(item.start).seconds,
+                    item.end,
+                    item.end.tzinfo.utcoffset(item.end).seconds,
+                )
+            )
+            cursor.execute(
+                "INSERT INTO yoga (start, start_offset, end, end_offset) VALUES (%s, %s, %s, %s)",
+                values,
+            )
+            connection.commit()
+    except pymysql.err.IntegrityError as e:
+        logger.error("IntegrityError: {error}".format(error=e))
+    close_server_connection(connection)
+
+
+def add_ght_entry(item: dict):
+    timestamp = item.pop("timestamp")
+    offset = item.pop("offset")
+    connection = create_server_connection()
+    for code, value in item.items():
+        try:
+            with connection.cursor() as cursor:
+                values = tuple((code, value, timestamp, offset))
+                cursor.execute("INSERT INTO `ght` (`code`, `value`, `ts`, `offset`) VALUES (%s, %s, %s, %s)", values)
+                connection.commit()
+        except pymysql.err.IntegrityError as e:
+            logger.error("IntegrityError: {error}".format(error=e))
+            continue
     close_server_connection(connection)

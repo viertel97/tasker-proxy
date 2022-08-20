@@ -79,8 +79,12 @@ def track_time(item: api_objects.timer):
 ### DB ###
 
 
-def track_meditation_habit_db(item: api_objects.reading_session):
+def track_meditation_habit_db(item: api_objects.meditation_session):
     db.add_meditation_session(item)
+
+
+def track_yoga_habit_db(item: api_objects.meditation_session):
+    db.add_yoga_session(item)
 
 
 def track_reading_habit_db(item: api_objects.reading_session):
@@ -91,6 +95,10 @@ def track_reading_habit_db(item: api_objects.reading_session):
 
 def track_time_db(item: api_objects.timer):
     db.add_timer(item)
+
+
+def track_ght_db(item: dict):
+    db.add_ght_entry(item)
 
 
 def track_list():

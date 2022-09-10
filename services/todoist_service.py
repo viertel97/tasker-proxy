@@ -2,11 +2,14 @@ import os
 from datetime import datetime, time, timedelta
 
 import pandas as pd
+import todoist
 from dateutil import parser
-from fastapi import FastAPI
 from loguru import logger
+from models.db_models import new_book, reading_session
 
 END_TIME = time(hour=6, minute=0, second=0)
+
+TODOIST_API = todoist.TodoistAPI(os.environ["TODOIST_TOKEN"])
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -15,7 +18,39 @@ logger.add(
     diagnose=True,
 )
 
-from apis import TODOIST_API, get_list
+
+def get_list(list_name):
+    return [item.data for item in TODOIST_API.state[list_name]]
+
+
+def add_reading_finished_task(item: reading_session):
+    TODOIST_API.sync()
+    TODOIST_API.items.add(
+        "'{other}' in Zotero & Obsidian einpflegen".format(other=item.title),
+        project_id="2244725398",
+        due={"string": "Tomorrow"},
+    )
+    TODOIST_API.items.add(
+        "eBook Reader updaten",
+        project_id="2244725398",
+        due={"string": "Tomorrow"},
+    )
+    TODOIST_API.items.add(
+        "'{other}' Obsidian-Notiz erstellen".format(other=item.title), project_id="2244466879", section_id="97635796"
+    )
+    TODOIST_API.commit()
+
+
+def add_book_reminder(item: new_book):
+    TODOIST_API.sync()
+    TODOIST_API.items.add(
+        "'{title}' in [Reading List](https://www.notion.so/e88940d2346e4f66a8cec95faa11dcfb) pflegen".format(
+            title=item.title
+        ),
+        project_id="2244725398",
+        due={"string": "Tomorrow"},
+    )
+    TODOIST_API.commit()
 
 
 def todoist_proxy(selected_service):

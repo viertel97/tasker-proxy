@@ -3,8 +3,8 @@ import os
 import pandas as pd
 import pymysql
 from dateutil import parser
-from helper.db_helper import close_server_connection, create_server_connection
 from loguru import logger
+from quarter_lib.database import close_server_connection, create_server_connection
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -39,10 +39,11 @@ def add_ght_entry(item: dict):
     for code, value in item.items():
         try:
             with connection.cursor() as cursor:
-                values = tuple((code, value, timestamp, timestamp.tzinfo.utcoffset(timestamp).seconds))
+                values = tuple((code, str(value), timestamp, timestamp.tzinfo.utcoffset(timestamp).seconds))
                 cursor.execute("INSERT INTO `ght` (`code`, `value`, `ts`, `offset`) VALUES (%s, %s, %s, %s)", values)
                 connection.commit()
         except pymysql.err.IntegrityError as e:
             logger.error("IntegrityError: {error}".format(error=e))
             continue
+
     close_server_connection(connection)

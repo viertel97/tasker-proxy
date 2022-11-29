@@ -1,9 +1,10 @@
 import os
 
 import pymysql
-from helper.db_helper import close_server_connection, create_server_connection
 from loguru import logger
 from models.db_models import app_usage, power
+from quarter_lib.database import close_server_connection, create_server_connection
+from quarter_lib.google import add_event_to_calendar
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -51,4 +52,5 @@ def add_app_usage(item: app_usage):
             connection.commit()
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
+    add_event_to_calendar(item.app, item.start, item.end)
     close_server_connection(connection)

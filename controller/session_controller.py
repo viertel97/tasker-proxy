@@ -1,8 +1,11 @@
 import os
+import re
 
-import helper.file_helper as file_helper
 from fastapi import APIRouter, Request
 from loguru import logger
+from quarter_lib.easy_voice_recorder import get_meditation_logs
+from quarter_lib.file_helper import get_config
+
 from models.db_models import meditation_session, new_book, reading_session, yoga_session
 from services.notion_service import (
     track_habit,
@@ -15,8 +18,8 @@ from services.session_service import (
     add_yoga_session,
 )
 from services.todoist_service import (
+    add_book_finished_task,
     add_book_reminder,
-    add_reading_finished_task,
     todoist_proxy,
 )
 
@@ -30,8 +33,10 @@ logger.add(
 router = APIRouter()
 
 
-proxy_mapping_dict = file_helper.get_config("tasker_mapping.json")
-habit_tracker_mapping_dict = file_helper.get_config("habit_tracker_mapping.json")
+proxy_mapping_dict = get_config("tasker_mapping.json")
+habit_tracker_mapping_dict = get_config("habit_tracker_mapping.json")
+
+RECORDING_FILE = "temp_recording.mp3"
 
 
 @logger.catch
@@ -39,7 +44,7 @@ habit_tracker_mapping_dict = file_helper.get_config("habit_tracker_mapping.json"
 async def proxy(service: str):
     logger.info("service: " + service)
     selected_service = proxy_mapping_dict[service]
-    todoist_proxy(selected_service)
+    await todoist_proxy(selected_service)
 
 
 @logger.catch
@@ -55,7 +60,7 @@ async def habit_tracker(service: str):
     logger.info("habit-tracker: " + service)
     service = habit_tracker_mapping_dict[service]
     track_habit(service)
-    todoist_proxy(proxy_mapping_dict["sport"])
+    await todoist_proxy(proxy_mapping_dict["sport"])
 
 
 @logger.catch
@@ -64,7 +69,7 @@ async def track_meditation(item: meditation_session):
     error_flag = add_meditation_session(item)
     if not error_flag:
         selected_service = proxy_mapping_dict["meditation-evening"]
-        todoist_proxy(selected_service)
+        await todoist_proxy(selected_service)
 
 
 @logger.catch
@@ -78,14 +83,26 @@ async def track_meditation(item: yoga_session):
 async def track_reading(item: reading_session):
     add_reading_session(item)
     if item.finished:
-        add_reading_finished_task(item)
+        await add_book_finished_task(item)
         update_reading_page_finished(item)
     selected_service = proxy_mapping_dict["reading"]
-    todoist_proxy(selected_service)
+    await todoist_proxy(selected_service)
 
 
 @logger.catch
 @router.post("/habit-tracker/new_book")
 async def track_reading(item: new_book):
     update_reading_page(item)
-    add_book_reminder(item)
+    await add_book_reminder(item)
+
+
+@router.post("/practice/recording")
+async def create_file(request: Request):
+    body = await request.body()
+    temp = str(body.decode("ISO-8859-1")).split("Content-Type: application/octet-stream")
+    test = temp[0].replace("--joaomgcdTaskerMOTHERFOCKERMUAHAHA\r\n", "")
+    file_name = re.search(r"\"file_name\":\"(.*)\"", test).group(1).split("/")[-1]
+    file_path = os.path.join(os.getcwd(), RECORDING_FILE)
+    with open(file_path, "wb") as f:
+        f.write(temp[1].encode("ISO-8859-1"))
+    get_meditation_logs(file_path, file_name)

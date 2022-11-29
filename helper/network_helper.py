@@ -28,6 +28,7 @@ async def log_request_info(request: Request):
         else:
             for key in request_body.keys():
                 logger.debug(f"\t{key}: {request_body[key]}")
-
     except JSONDecodeError:
+        logger.debug("Wrong Empty body")
+    except UnicodeDecodeError:
         logger.debug("Wrong Empty body")

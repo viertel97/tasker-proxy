@@ -2,11 +2,8 @@ import os
 
 from fastapi import APIRouter, Request
 from loguru import logger
-from services.ght_service import add_ght_entry, track_ght_db, track_ght_entry
-from services.notion_service import update_reading_page
-from services.todoist_service import add_book_reminder
 
-from controller.shield_controller import track_app_usage_db, track_start_stop_db
+from services.ght_service import add_ght_entry, get_ght_questions
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -27,30 +24,6 @@ async def get_body(request: Request):
 
 
 @logger.catch
-@router.get("/ght/daily")
-async def get_ght_questions():
-    return get_ght_questions("daily")
-
-
-@logger.catch
-@router.get("/ght/weekly")
-async def get_ght_questions():
-    return get_ght_questions("weekly")
-
-
-@logger.catch
-@router.get("/ght/monthly")
-async def get_ght_questions():
-    return get_ght_questions("monthly")
-
-
-@logger.catch
-@router.get("/ght/quarterly")
-async def get_ght_questions():
-    return get_ght_questions("quarterly")
-
-
-@logger.catch
-@router.get("/ght/yearly")
-async def get_ght_questions():
-    return get_ght_questions("yearly")
+@router.get("/ght/{service}")
+async def ght_questions(service: str):
+    return get_ght_questions(service)

@@ -51,3 +51,11 @@ class app_usage(DefaultModel):
 
 class power(BaseModel):
     type: str
+
+
+class drug_session(BaseModel):
+    beer: Optional[str]
+    wine: Optional[str]
+    liquor: Optional[str]
+    other: Optional[str]
+    water: Optional[str]

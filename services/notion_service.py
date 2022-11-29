@@ -2,11 +2,12 @@ import json
 import os
 from datetime import datetime, time
 
-import helper.file_helper as file_helper
 import pandas as pd
 import requests
 from loguru import logger
-from models.db_models import meditation_session, new_book, reading_session, timer
+from quarter_lib.file_helper import get_config, get_value
+
+from models.db_models import new_book, reading_session
 
 api_key = os.environ["NOTION_TOKEN"]
 
@@ -18,7 +19,7 @@ headers = {
 }
 
 END_TIME = time(hour=6, minute=0, second=0)
-DATABASES = file_helper.get_config("databases_config.json")
+DATABASES = get_config("databases_config.json")
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -45,54 +46,6 @@ def get_page_for_date(date, database_id):
             break
     df = pd.json_normalize(result_list, sep="~")
     return df.loc[df["properties~Date~date~start"] == date.strftime("%Y-%m-%d")].iloc[0]
-
-
-def get_previous_rich_text_content(page, property):
-    content = ""
-    if len(page[property]) > 0:
-        content = page[property][0]["plain_text"]
-    return content
-
-
-def book_reading_update_notion_habit_tracker_page(page, item: reading_session):
-    url = base_url + "pages/" + page.id
-    data = get_rich_text_data(page, item)
-    r = requests.patch(url, data=json.dumps(data), headers=headers).json()
-    logger.info("'book read' filled on page '" + page.id + "'")
-
-
-def meditation_update_notion_habit_tracker_page(page, item: meditation_session):
-    url = base_url + "pages/" + page.id
-    data = get_rich_text_data(page, item)
-    r = requests.patch(url, data=json.dumps(data), headers=headers).json()
-    logger.info("'meditation' filled on page '" + page.id + "'")
-
-
-def get_meditation_data(page, item: meditation_session):
-    previous_data = get_previous_rich_text_content(page, "properties~Meditation~rich_text")
-    content_list = json.loads(previous_data) if previous_data else []
-    content_list.append(item.__dict__)
-    content_json = json.dumps(content_list, indent=4)
-    return {"properties": {"Meditation": {"rich_text": [{"type": "text", "text": {"content": content_json}}]}}}
-
-
-def get_reading_data(page, item: reading_session):
-    previous_data = get_previous_rich_text_content(page, "properties~Reading~rich_text")
-    content_list = json.loads(previous_data) if previous_data else []
-    content_list.append(item.__dict__)
-    content_json = json.dumps(content_list, indent=4, ensure_ascii=False)
-    return {"properties": {"Reading": {"rich_text": [{"type": "text", "text": {"content": content_json}}]}}}
-
-
-def get_rich_text_data(page, item):
-    if type(item) == meditation_session:
-        return get_meditation_data(page, item)
-    elif type(item) == reading_session:
-        return get_reading_data(page, item)
-    elif type(item) == timer:
-        return get_timer_data(page, item)
-    else:
-        logger.info("Wrong object")
 
 
 def get_previous_multi_select_content(page, property):
@@ -123,23 +76,6 @@ def update_notion_habit_tracker_page(page, completed_habit):
             completed_habit=completed_habit, page_id=page.id
         )
     )
-
-
-def timer_update_notion_habit_tracker_page(page, item: timer):
-    url = base_url + "pages/" + page.id
-    data = get_rich_text_data(page, item)
-    r = requests.patch(url, data=json.dumps(data), headers=headers).json()
-    logger.info("'timer' ({item}) checked on page {page_id}'".format(item=item.context, page_id=page.id))
-
-
-def get_timer_data(page, item: timer):
-    previous_data = get_previous_rich_text_content(page, "properties~Timer~rich_text")
-    content_list = json.loads(previous_data) if previous_data else []
-
-    content_list.append(item.__dict__)
-    content_json = json.dumps(content_list, indent=4, ensure_ascii=False)
-
-    return {"properties": {"Timer": {"rich_text": [{"type": "text", "text": {"content": content_json}}]}}}
 
 
 def update_reading_page(item: new_book):
@@ -176,7 +112,7 @@ def update_reading_page_finished(item: reading_session):
         data=json.dumps(data),
         headers=headers,
     ).json()
-    if len(r["results"]) > 0:
+    if "results" in r.keys() and len(r["results"]) > 0:
         end = datetime.today().strftime("%Y-%m-%d")
         url = base_url + "pages/" + r["results"][0]["id"]
         data = {
@@ -193,7 +129,7 @@ def update_reading_page_finished(item: reading_session):
 
 
 def track_habit(selected_service):
-    database = file_helper.get_value("habit_tracker", "name", DATABASES)
+    database = get_value("habit_tracker", "name", DATABASES)
     page = get_page_for_date(
         datetime.today(),
         database["id"],

@@ -1,6 +1,14 @@
+requirements_custom.txt
+
+*.cmd
+.vscode
+*.json
 *.ipynb
 config/
+*.code-workspace
+.vscode/launch.json
 
+.vscode
 .idea/**
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm,python

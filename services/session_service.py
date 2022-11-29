@@ -2,9 +2,9 @@ import os
 from datetime import timedelta
 
 import pymysql.cursors
-from helper.db_helper import close_server_connection, create_server_connection
 from loguru import logger
 from models.db_models import meditation_session, reading_session, yoga_session
+from quarter_lib.database import close_server_connection, create_server_connection
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),

@@ -1,6 +1,7 @@
 import logging
 import os
 import platform
+from pathlib import Path
 
 import uvicorn
 from fastapi import APIRouter, Depends, FastAPI, Request, status
@@ -8,7 +9,25 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from controller import controllers
+from controller import (
+    audiobook_controller,
+    drug_session_controller,
+    ght_controller,
+    session_controller,
+    shield_controller,
+    timer_controller,
+)
+
+controllers = [
+    drug_session_controller,
+    session_controller,
+    ght_controller,
+    shield_controller,
+    timer_controller,
+    audiobook_controller,
+]
+
+
 from helper.network_helper import log_request_info
 
 app = FastAPI(debug=True)
@@ -35,6 +54,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 if __name__ == "__main__":
     if platform.system() == "Windows":
-        uvicorn.run(app, host="0.0.0.0", port=9000)
+        uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", reload=True, port=9000)
     else:
-        uvicorn.run(app, host="192.168.178.100", port=9000)
+        uvicorn.run(app, host="0.0.0.0", port=9000)

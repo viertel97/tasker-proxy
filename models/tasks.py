@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from loguru import logger
 from pydantic import BaseModel
@@ -13,5 +14,11 @@ logger.add(
 
 class zotero_task(BaseModel):
     title: str
-    ms_of_timestamp: int
-    ms_of_chapter: int
+    author: str
+    ms_of_bookmark_timestamp: int
+    ms_of_bookmark_chapter: int
+    timestamp: datetime
+
+
+class audiobook_finished(BaseModel):
+    title: str

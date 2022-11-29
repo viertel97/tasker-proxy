@@ -1,9 +1,11 @@
 import os
+from datetime import timedelta
 
 import pymysql.cursors
 from loguru import logger
-from models.db_models import timer
 from quarter_lib.database import close_server_connection, create_server_connection
+
+from models.db_models import drug_session
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -13,21 +15,21 @@ logger.add(
 )
 
 
-def add_timer(item: timer):
+def generate_insert(keys):
+    return "INSERT INTO d_session ({keys}) VALUES ({values})".format(
+        keys=", ".join(keys), values=", ".join(["%s"] * len(keys))
+    )
+
+
+def add_drug_session(item: drug_session):
+    item_dict = {k: v for k, v in item.dict().items() if v}
     connection = create_server_connection()
     try:
         with connection.cursor() as cursor:
-            values = tuple(
-                (
-                    item.context,
-                    item.start,
-                    item.start.tzinfo.utcoffset(item.start).seconds,
-                    item.end,
-                    item.end.tzinfo.utcoffset(item.end).seconds,
-                )
-            )
+            values = tuple(item_dict.values())
+            sql = generate_insert(item_dict.keys())
             cursor.execute(
-                "INSERT INTO timer (context, start, start_offset, end, end_offset) VALUES (%s, %s, %s, %s, %s)",
+                sql,
                 values,
             )
             connection.commit()

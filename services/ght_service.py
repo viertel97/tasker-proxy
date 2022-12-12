@@ -21,7 +21,8 @@ def get_ght_questions(type_of_question):
     df.sort_values(by=["question_order"], inplace=True)
     df = df[df["active"] == 1]
     df = df[["code", "message", "notation", "default_type"]]
-    return df.to_json(orient="values")
+    result = df.to_dict(orient="records")
+    return result
 
 
 def get_exercises(type):
@@ -34,13 +35,17 @@ def get_exercises(type):
 
 
 def add_ght_entry(item: dict):
-    timestamp = parser.parse(item.pop("timestamp"))
     connection = create_server_connection()
+    df = pd.read_sql("SELECT * FROM ght_questions_daily", connection)
+    df = df[['code','multiplier']]
+    df = df.set_index("code")
+    multiplier_dict = df.to_dict(orient="index")
+    timestamp = parser.parse(item.pop("timestamp"))
     for code, value in item.items():
         try:
             with connection.cursor() as cursor:
-                values = tuple((code, str(value), timestamp, timestamp.tzinfo.utcoffset(timestamp).seconds))
-                cursor.execute("INSERT INTO `ght` (`code`, `value`, `ts`, `offset`) VALUES (%s, %s, %s, %s)", values)
+                values = tuple((code, str(value), timestamp, timestamp.tzinfo.utcoffset(timestamp).seconds, multiplier_dict[code]['multiplier']))
+                cursor.execute("INSERT INTO `ght` (`code`, `value`, `ts`, `offset`, `multiplier`) VALUES (%s, %s, %s, %s, %s)", values)
                 connection.commit()
         except pymysql.err.IntegrityError as e:
             logger.error("IntegrityError: {error}".format(error=e))

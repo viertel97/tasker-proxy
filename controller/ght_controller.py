@@ -3,7 +3,7 @@ import os
 from fastapi import APIRouter, Request
 from loguru import logger
 
-from services.ght_service import add_ght_entry, get_ght_questions
+from services.ght_service import add_ght_entry, get_ght_questions, add_wellbeing_entry
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -28,3 +28,11 @@ async def get_body(request: Request):
 async def ght_questions(service: str):
     result = get_ght_questions(service)
     return result
+
+@logger.catch
+@router.post("/wellbeing")
+async def add_wellbeing(request: Request):
+    wellbeing_data = await request.json()
+    logger.info("service: " + str("wellbeing"))
+    add_wellbeing_entry(wellbeing_data)
+

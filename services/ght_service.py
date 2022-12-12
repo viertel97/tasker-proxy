@@ -52,3 +52,16 @@ def add_ght_entry(item: dict):
             continue
 
     close_server_connection(connection)
+
+def add_wellbeing_entry(item: dict):
+    connection = create_server_connection()
+    timestamp = parser.parse(item.pop("ts"))
+    try:
+        with connection.cursor() as cursor:
+            values = tuple(("daily_wellbeing", item['value'], timestamp, timestamp.tzinfo.utcoffset(timestamp).seconds))
+            cursor.execute("INSERT INTO `ght` (`code`, `value`, `ts`, `offset`) VALUES (%s, %s, %s, %s)", values)
+            connection.commit()
+    except pymysql.err.IntegrityError as e:
+        logger.error("IntegrityError: {error}".format(error=e))
+
+    close_server_connection(connection)

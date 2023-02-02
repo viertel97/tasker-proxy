@@ -1,11 +1,10 @@
 import os
-import sys
 from datetime import datetime, time, timedelta
 
 import pandas as pd
 from dateutil import parser
 from loguru import logger
-from quarter_lib.todoist import move_item_to_project, move_item_to_section, update_due
+from quarter_lib.todoist import move_item_to_project, update_due, complete_task_by_title
 from todoist_api_python.api import TodoistAPI
 
 from models.db_models import new_book, reading_session
@@ -13,7 +12,7 @@ from models.tasks import zotero_task
 
 END_TIME = time(hour=6, minute=0, second=0)
 
-TODOIST_API = TodoistAPI(os.environ["TODOIST_TOKEN"])
+TODOIST_API = TodoistAPI(os.environ["TODOIST_TOKEN"])                                                        
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -29,20 +28,30 @@ async def add_book_finished_task(item: reading_session):
     )
     move_item_to_project(task.id, "2244725398")
     update_due(task.id, due={"string": "Tomorrow"})
+
     if type(item) == reading_session:
         task = TODOIST_API.add_task(
             "eBook Reader updaten",
         )
     else:
         task = TODOIST_API.add_task(
-            "Hörbücher updaten",
+            "Hörbücher updaten + in einzelne Kapitel aufteilen",
         )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
+
     task = TODOIST_API.add_task(
         "Aus Obsidian-Datei für '{other}' Tasks generieren".format(other=item.title),
     )
-    move_item_to_section(task.id, "97635796")
+    update_due(task.id, due={"string": "Tomorrow"})
+    move_item_to_project(task.id, "2244725398")
+
+    task = TODOIST_API.add_task(
+        "Vorherige Obsidian-Notizen aus dem Buch '{other}' in 10 Takeaways überführen + Impressionen, Zitate und Bonus einpflegen".format(
+            other=item.title),
+    )
+    update_due(task.id, due={"string": "Tomorrow"})
+    move_item_to_project(task.id, "2244725398")
 
 
 async def add_book_reminder(item: new_book):
@@ -55,32 +64,8 @@ async def add_book_reminder(item: new_book):
     update_due(item.id, due={"string": "Tomorrow"})
 
 
-async def todoist_proxy(selected_service):
-    df_items = pd.DataFrame([item.__dict__ for item in TODOIST_API.get_tasks()])
-    item = df_items[df_items.content == selected_service].sample(1).iloc[0]
-    logger.info(item)
-
-    TODOIST_API.close_task(str(item["id"]))
-    api_item = TODOIST_API.get_task(str(item["id"]))
-    if parser.parse(api_item.due.date).date() >= (datetime.today() + timedelta(days=1)).date():
-        due = {
-            "date": (datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d"),
-            "is_recurring": True,
-            "lang": "en",
-            "string": "every day",
-            "timezone": None,
-        }
-        update_due(item["id"], due=due)
-
-    if END_TIME > datetime.now().time():
-        due = {
-            "date": datetime.today().strftime("%Y-%m-%d"),
-            "is_recurring": True,
-            "lang": "en",
-            "string": "every day",
-            "timezone": None,
-        }
-        update_due(item["id"], due=due)
+async def complete_task(selected_service):
+    complete_task_by_title(selected_service)
 
 
 async def add_zotero_task(item: zotero_task):
@@ -110,3 +95,25 @@ async def add_zotero_task(item: zotero_task):
 
 async def update_due_date(task_id, due):
     return update_due(task_id, due)
+
+
+async def get_rework_tasks():
+    df_items = pd.DataFrame([item.__dict__ for item in TODOIST_API.get_tasks()])
+    df_items = df_items[df_items.project_id == "2244725398"]
+    df_items = df_items[df_items.content.str.contains("nacharbeiten")]
+    df_items.content = df_items.content.str.replace(" - nacharbeiten & Tracker pflegen", "")
+    df_items.content = df_items.content.str.replace(" nacharbeiten", "")
+    df_items.sort_values(by="due", inplace=True)
+    item_list = df_items.to_dict(orient="records")
+    result_list = []
+    for item in item_list:
+        result_str = str(item["content"])
+        if (item['due'] is not None):
+            if (item['due'].datetime is not None):
+                result_str += " (Due: " + parser.parse(item['due'].datetime).strftime("%d.%m.%Y %H:%M") + ")"
+            else:
+                result_str += " (Due: " + parser.parse(item['due'].date).strftime("%d.%m.%Y") + ")"
+            if (item['priority'] != 1):
+                result_str += " (Prio: " + str(item['priority']) + ")"
+            result_list.append(result_str)
+    return result_list

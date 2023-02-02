@@ -15,7 +15,7 @@ from controller import (
     ght_controller,
     session_controller,
     shield_controller,
-    timer_controller,
+    timer_controller, dynamic_notification_controller,
 )
 
 controllers = [
@@ -25,6 +25,7 @@ controllers = [
     shield_controller,
     timer_controller,
     audiobook_controller,
+    dynamic_notification_controller,
 ]
 
 

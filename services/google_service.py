@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from dateutil import parser
 from loguru import logger
-from quarter_lib.google import build_calendar_service, get_dict, get_events_from_calendar
+from quarter_lib_old.google import build_calendar_service, get_dict, get_events_from_calendar
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -28,7 +28,7 @@ DEBUG = os.name == "nt"
 
 
 def get_events():
-    calendar_service = build_calendar_service(pickle_path, creds_path, SCOPES)
+    calendar_service = build_calendar_service()
 
     calendar_dict = get_dict(calendar_service)
 

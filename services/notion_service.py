@@ -5,7 +5,7 @@ from datetime import datetime, time
 import pandas as pd
 import requests
 from loguru import logger
-from quarter_lib.file_helper import get_config, get_value
+from quarter_lib_old.file_helper import get_config, get_value
 
 from models.db_models import new_book, reading_session
 
@@ -113,6 +113,9 @@ def update_reading_page_finished(item: reading_session):
         headers=headers,
     ).json()
     if "results" in r.keys() and len(r["results"]) > 0:
+        if len(r["results"]) > 1:
+            logger.warning("more than one book with '{title}' was found on Reading List".format(title=item.title))
+            return
         end = datetime.today().strftime("%Y-%m-%d")
         url = base_url + "pages/" + r["results"][0]["id"]
         data = {

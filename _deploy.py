@@ -6,7 +6,7 @@ sys.path.append("..")
 import glob
 
 from loguru import logger
-from quarter_lib.deployment import deploy_to_server, deploy_to_server_with_folders
+from quarter_lib_old.deployment import deploy_to_server, deploy_to_server_with_folders
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),

@@ -1,4 +1,3 @@
-import logging
 import os
 import platform
 from pathlib import Path
@@ -15,7 +14,7 @@ from controller import (
     ght_controller,
     session_controller,
     shield_controller,
-    timer_controller, dynamic_notification_controller,
+    timer_controller, dynamic_notification_controller, smart_home_controller, leaf_controller
 )
 
 controllers = [
@@ -26,8 +25,8 @@ controllers = [
     timer_controller,
     audiobook_controller,
     dynamic_notification_controller,
+    smart_home_controller,leaf_controller
 ]
-
 
 from helper.network_helper import log_request_info
 
@@ -35,7 +34,6 @@ app = FastAPI(debug=True)
 router = APIRouter()
 
 [app.include_router(controller.router, dependencies=[Depends(log_request_info)]) for controller in controllers]
-
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -48,7 +46,7 @@ logger.add(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
-    logging.error(f"{request}: {exc_str}")
+    logger.info(f"{request}: {exc_str}")
     content = {"status_code": 10422, "message": exc_str, "data": None}
     return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 

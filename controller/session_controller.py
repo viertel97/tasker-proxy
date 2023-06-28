@@ -3,8 +3,8 @@ import re
 
 from fastapi import APIRouter, Request
 from loguru import logger
-from quarter_lib.easy_voice_recorder import get_logs_from_recording
-from quarter_lib.file_helper import get_config
+from quarter_lib_old.easy_voice_recorder import get_logs_from_recording
+from quarter_lib_old.file_helper import get_config
 
 from models.db_models import meditation_session, new_book, reading_session, yoga_session
 from services.notion_service import (

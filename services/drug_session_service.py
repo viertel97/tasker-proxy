@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pymysql.cursors
 from loguru import logger
-from quarter_lib.database import close_server_connection, create_server_connection
+from quarter_lib_old.database import close_server_connection, create_server_connection
 
 from models.db_models import drug_session
 

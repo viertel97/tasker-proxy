@@ -4,7 +4,7 @@ from datetime import datetime, time, timedelta
 import pandas as pd
 from dateutil import parser
 from loguru import logger
-from quarter_lib.todoist import move_item_to_project, update_due, complete_task_by_title
+from quarter_lib_old.todoist import move_item_to_project, update_due, complete_task_by_title
 from todoist_api_python.api import TodoistAPI
 
 from models.db_models import new_book, reading_session
@@ -12,7 +12,7 @@ from models.tasks import zotero_task
 
 END_TIME = time(hour=6, minute=0, second=0)
 
-TODOIST_API = TodoistAPI(os.environ["TODOIST_TOKEN"])                                                        
+TODOIST_API = TodoistAPI(os.environ["TODOIST_TOKEN"])
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -54,6 +54,15 @@ async def add_book_finished_task(item: reading_session):
     move_item_to_project(task.id, "2244725398")
 
 
+async def add_task(title, due=None, project_id=None):
+    task = TODOIST_API.add_task(title)
+    if project_id:
+        move_item_to_project(task.id, project_id)
+    if due:
+        update_due(task.id, due={"string": due})
+    return task
+
+
 async def add_book_reminder(item: new_book):
     item = TODOIST_API.add_task(
         "'{title}' in [Reading List](https://www.notion.so/e88940d2346e4f66a8cec95faa11dcfb) pflegen".format(
@@ -65,7 +74,7 @@ async def add_book_reminder(item: new_book):
 
 
 async def complete_task(selected_service):
-    complete_task_by_title(selected_service)
+    await complete_task_by_title(selected_service)
 
 
 async def add_zotero_task(item: zotero_task):

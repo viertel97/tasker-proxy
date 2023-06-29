@@ -2,9 +2,7 @@ requirements_custom.txt
 
 *.cmd
 .vscode
-*.json
 *.ipynb
-config/
 *.code-workspace
 .vscode/launch.json
 

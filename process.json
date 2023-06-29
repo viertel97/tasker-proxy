@@ -1,0 +1,14 @@
+{
+    "apps": [
+        {
+            "name": "tasker-proxy",
+            "script": "main.py",
+            "cwd": "/home/pi/code/tasker-proxy",
+            "interpreter": "/home/pi/code/tasker-proxy/venv/bin/python",
+            "instances": 1,
+            "exec_mode": "fork",
+            "log_date_format": "YYYY-MM-DD HH:mm Z",
+            "combine_logs": true
+        }
+    ]
+}

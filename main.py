@@ -25,7 +25,7 @@ controllers = [
     timer_controller,
     audiobook_controller,
     dynamic_notification_controller,
-    smart_home_controller,leaf_controller
+    smart_home_controller, leaf_controller
 ]
 
 from helper.network_helper import log_request_info

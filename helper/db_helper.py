@@ -1,17 +1,8 @@
 import os
-from datetime import timedelta
 
 import pymysql.cursors
-from dateutil import parser
 from loguru import logger
-from models.db_models import (
-    app_usage,
-    meditation_session,
-    power,
-    reading_session,
-    timer,
-    yoga_session,
-)
+from quarter_lib.akeyless import get_target
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -19,18 +10,14 @@ logger.add(
     backtrace=True,
     diagnose=True,
 )
-DB_HOST = os.environ["DB_HOST"]
-
-DB_NAME = os.environ["DB_NAME"]
-DB_USERNAME = os.environ["DB_USERNAME"]
-DB_PASSWORD = os.environ["DB_PASSWORD"]
+DB_USER_NAME, DB_HOST_NAME, DB_PASSWORD, DB_PORT, DB_NAME = get_target("private")
 
 
 def create_server_connection():
     return pymysql.connect(
-        host=DB_HOST,
+        host=DB_HOST_NAME,
         port=3306,
-        user=DB_USERNAME,
+        user=DB_USER_NAME,
         password=DB_PASSWORD,
         database=DB_NAME,
         cursorclass=pymysql.cursors.DictCursor,

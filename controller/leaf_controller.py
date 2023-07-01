@@ -50,4 +50,5 @@ async def create_file(request: Request):
         f.write(temp[1].encode("ISO-8859-1"))
     con = sqlite3.connect(file_path)
     df_book = pd.read_sql_query("SELECT * FROM book", con)
-    df_book.to_csv("book.csv", index=False)
+    df_test = pd.read_sql_query("SELECT * FROM book", con)
+

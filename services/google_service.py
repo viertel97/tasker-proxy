@@ -23,7 +23,7 @@ else:
     creds_path = "/home/pi/code/todoist-refresher/config/cred7.json"
 
 creds = None
-MONICA_TOKEN = os.environ.get("MONICA_TOKEN")
+
 DEBUG = os.name == "nt"
 
 

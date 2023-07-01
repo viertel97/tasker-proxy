@@ -11,3 +11,4 @@ todoist_api_python==2.0.1
 uvicorn==0.15.0
 python-multipart==0.0.5
 SpeechRecognition==3.8.1
+quarter_lib==0.0.22

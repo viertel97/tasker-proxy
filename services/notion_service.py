@@ -6,10 +6,10 @@ import pandas as pd
 import requests
 from loguru import logger
 from quarter_lib_old.file_helper import get_config, get_value
-
+from quarter_lib.akeyless import get_secrets
 from models.db_models import new_book, reading_session
 
-api_key = os.environ["NOTION_TOKEN"]
+api_key = get_secrets(["notion/token"])
 
 base_url = "https://api.notion.com/v1/"
 headers = {

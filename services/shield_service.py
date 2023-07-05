@@ -2,9 +2,10 @@ import os
 
 import pymysql
 from loguru import logger
-from models.db_models import app_usage, power
-from quarter_lib_old.database import close_server_connection, create_server_connection
 from quarter_lib_old.google import add_event_to_calendar
+
+from helper.db_helper import create_server_connection, close_server_connection
+from models.db_models import app_usage, power
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),

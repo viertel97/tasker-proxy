@@ -4,7 +4,8 @@ import pandas as pd
 import pymysql
 from dateutil import parser
 from loguru import logger
-from quarter_lib_old.database import close_server_connection, create_server_connection
+
+from helper.db_helper import create_server_connection, close_server_connection
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -37,21 +38,25 @@ def get_exercises(type):
 def add_ght_entry(item: dict):
     connection = create_server_connection()
     df = pd.read_sql("SELECT * FROM ght_questions_daily", connection)
-    df = df[['code','multiplier']]
+    df = df[['code', 'multiplier']]
     df = df.set_index("code")
     multiplier_dict = df.to_dict(orient="index")
     timestamp = parser.parse(item.pop("timestamp"))
     for code, value in item.items():
         try:
             with connection.cursor() as cursor:
-                values = tuple((code, str(value), timestamp, timestamp.tzinfo.utcoffset(timestamp).seconds, multiplier_dict[code]['multiplier']))
-                cursor.execute("INSERT INTO `ght` (`code`, `value`, `ts`, `offset`, `multiplier`) VALUES (%s, %s, %s, %s, %s)", values)
+                values = tuple((code, str(value), timestamp, timestamp.tzinfo.utcoffset(timestamp).seconds,
+                                multiplier_dict[code]['multiplier']))
+                cursor.execute(
+                    "INSERT INTO `ght` (`code`, `value`, `ts`, `offset`, `multiplier`) VALUES (%s, %s, %s, %s, %s)",
+                    values)
                 connection.commit()
         except pymysql.err.IntegrityError as e:
             logger.error("IntegrityError: {error}".format(error=e))
             continue
 
     close_server_connection(connection)
+
 
 def add_wellbeing_entry(item: dict):
     connection = create_server_connection()

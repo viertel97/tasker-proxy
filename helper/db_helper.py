@@ -3,6 +3,8 @@ import os
 import pymysql.cursors
 from loguru import logger
 from quarter_lib.akeyless import get_target
+from sqlalchemy import create_engine
+import urllib.parse
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -26,3 +28,16 @@ def create_server_connection():
 
 def close_server_connection(connection):
     connection.close()
+
+
+def create_sqlalchemy_engine():
+    return create_engine(
+        "mysql+pymysql://{user}:{password}@{host}:{port}/{db}?charset=utf8mb4".format(
+            user=DB_USER_NAME,
+            password=urllib.parse.quote_plus(DB_PASSWORD),
+            host=DB_HOST_NAME,
+            port=DB_PORT,
+            db=DB_NAME,
+        ),
+        echo=True,
+    )

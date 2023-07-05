@@ -3,25 +3,20 @@ from datetime import datetime, time, timedelta
 
 import pandas as pd
 from dateutil import parser
-from loguru import logger
 from quarter_lib_old.todoist import move_item_to_project, update_due, complete_task_by_title
 from todoist_api_python.api import TodoistAPI
 
 from models.db_models import new_book, reading_session
 from models.tasks import zotero_task
 from quarter_lib.akeyless import get_secrets
+from quarter_lib.logging import setup_logging
+
 END_TIME = time(hour=6, minute=0, second=0)
 
 TODOIST_TOKEN = get_secrets(["todoist/token"])
 TODOIST_API = TodoistAPI(TODOIST_TOKEN)
 
-logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
-
+logger = setup_logging(__name__)
 
 async def add_book_finished_task(item: reading_session):
     task = TODOIST_API.add_task(

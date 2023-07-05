@@ -4,7 +4,7 @@ from datetime import timedelta
 import pymysql.cursors
 from loguru import logger
 from models.db_models import meditation_session, reading_session, yoga_session
-from quarter_lib_old.database import close_server_connection, create_server_connection
+from helper.db_helper import create_server_connection, close_server_connection
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),

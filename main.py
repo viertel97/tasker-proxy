@@ -52,6 +52,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 if __name__ == "__main__":
+    print("lol")
     if platform.system() == "Windows":
         uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", reload=True, port=9000)
     else:

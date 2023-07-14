@@ -3,6 +3,7 @@ import os
 from fastapi import APIRouter, Request, Body
 from fastapi import BackgroundTasks
 from quarter_lib.logging import setup_logging
+from quarter_lib_old.todoist import complete_task_by_title
 
 from services.sqlite_service import update_koreader_tables
 
@@ -21,4 +22,5 @@ async def upload_file(background_tasks: BackgroundTasks, request: Request, file:
         f.write(file)
 
     background_tasks.add_task(update_koreader_tables, file_path)
+    background_tasks.add_task(await complete_task_by_title("Lesen"))
     return {"file_name": file_name}

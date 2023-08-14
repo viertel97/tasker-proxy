@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from uuid import uuid4
-
+import json
 import pymysql
 from loguru import logger
 from quarter_lib_old.database import create_monica_server_connection
@@ -21,9 +21,17 @@ INBOX_CONTACT_ID = 52
 
 
 def add_call_rework_task(item: call):
+    logger.info("Adding call rework task: {item}".format(item=item))
     connection = create_monica_server_connection()
-    summary = "Incoming call by '{name}' at '{timestamp}'".format(name=item.contact, timestamp=item.timestamp) if item.incoming else "Outgoing call to '{contact}' at '{timestamp}'".format(name=item.contact, timestamp=item.timestamp)
+    summary = f"Incoming call by '{item.contact}' at '{item.timestamp}'" if item.incoming else f"Outgoing call to '{item.contact}' at '{item.timestamp}'"
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    temp_dict = {
+        "type": "call",
+        "contact": item.contact,
+        "timestamp": item.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        "incoming": item.incoming,
+    }
+    description = "---\n" + json.dumps(temp_dict, indent=4, sort_keys=True) + "\n---\n\n" + item.message if item.message is not None else ""
     try:
         with connection.cursor() as cursor:
             happened_at = item.timestamp.strftime("%Y-%m-%d")
@@ -32,8 +40,7 @@ def add_call_rework_task(item: call):
                     uuid4(),
                     DEFAULT_ACCOUNT_ID,
                     summary,
-                    item.message if item.message is not None else "",
-                    happened_at,
+                    description, happened_at,
                     timestamp,
                     timestamp,
                 )

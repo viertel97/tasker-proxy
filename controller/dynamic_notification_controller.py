@@ -13,7 +13,8 @@ logger.add(
     diagnose=True,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["dynamic_notification"])
+
 
 def generate_html_list(list, title):
     html_list = "<h4>" + title + "</h2><ul>"
@@ -21,6 +22,8 @@ def generate_html_list(list, title):
         html_list += "<li>" + item + "</li>"
     html_list += "</ul>"
     return html_list
+
+
 @logger.catch
 @router.get("/tasker/notification")
 async def preparations():

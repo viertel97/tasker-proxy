@@ -4,6 +4,7 @@ from fastapi import Request
 from loguru import logger
 
 
+
 async def log_request_info(request: Request):
     logger.debug(f"{request.method} {request.url}")
     if request.path_params.items():

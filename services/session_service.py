@@ -1,17 +1,13 @@
-import os
 from datetime import timedelta
 
 import pymysql.cursors
-from loguru import logger
-from models.db_models import meditation_session, reading_session, yoga_session
-from helper.db_helper import create_server_connection, close_server_connection
+from quarter_lib.logging import setup_logging
 
-logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+from helper.db_helper import create_server_connection, close_server_connection
+from models.db_models import meditation_session, reading_session, yoga_session
+from services.telegram_service import send_to_telegram
+
+logger = setup_logging(__file__)
 
 
 def add_reading_session(item: reading_session):
@@ -41,7 +37,7 @@ def add_reading_session(item: reading_session):
     close_server_connection(connection)
 
 
-def add_meditation_session(item: meditation_session):
+async def add_meditation_session(item: meditation_session):
     item.start = item.start + timedelta(seconds=30)  # Warm Up
     error_flag = False
     connection = create_server_connection()
@@ -65,10 +61,11 @@ def add_meditation_session(item: meditation_session):
         logger.error("IntegrityError: {error}".format(error=e))
         error_flag = True
     close_server_connection(connection)
+    await send_to_telegram("Meditation session added to database")
     return error_flag
 
 
-def add_yoga_session(item: yoga_session):
+async def add_yoga_session(item: yoga_session):
     connection = create_server_connection()
     try:
         with connection.cursor() as cursor:
@@ -89,3 +86,4 @@ def add_yoga_session(item: yoga_session):
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
     close_server_connection(connection)
+    await send_to_telegram("Yoga session added to database")

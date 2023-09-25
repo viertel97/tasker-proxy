@@ -42,6 +42,7 @@ def add_ght_entry(item: dict):
     df = df.set_index("code")
     multiplier_dict = df.to_dict(orient="index")
     timestamp = parser.parse(item.pop("timestamp"))
+    error_count = 0
     for code, value in item.items():
         try:
             with connection.cursor() as cursor:
@@ -53,9 +54,11 @@ def add_ght_entry(item: dict):
                 connection.commit()
         except pymysql.err.IntegrityError as e:
             logger.error("IntegrityError: {error}".format(error=e))
+            error_count += 1
             continue
 
     close_server_connection(connection)
+    return error_count
 
 
 def add_wellbeing_entry(item: dict):

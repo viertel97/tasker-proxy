@@ -13,7 +13,7 @@ logger.add(
     diagnose=True,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["drug_session"])
 
 
 @logger.catch

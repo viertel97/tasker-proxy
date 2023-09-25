@@ -5,7 +5,7 @@ from models.db_models import timer
 from services.timer_service import add_timer
 
 logger = setup_logging(__name__)
-router = APIRouter()
+router = APIRouter(tags=["timer"])
 
 
 @logger.catch

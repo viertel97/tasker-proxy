@@ -8,7 +8,7 @@ from services.monica_service import add_call_rework_task
 
 logger = setup_logging(__name__)
 
-router = APIRouter(prefix="/call")
+router = APIRouter(prefix="/call", tags=["call"])
 
 
 @logger.catch

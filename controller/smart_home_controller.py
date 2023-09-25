@@ -12,7 +12,7 @@ logger.add(
     diagnose=True,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["smart_home"])
 
 
 @logger.catch

@@ -13,7 +13,7 @@ logger.add(
     diagnose=True,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["audiobook"])
 
 
 @logger.catch
@@ -27,9 +27,9 @@ async def create_todoist_zotero_task(item: zotero_task):
 async def audiobook_finished(item: audiobook_finished):
     await add_audiobook_finished_task(item)
 
+
 @logger.catch
 @router.get("/test")
 async def test():
     print("test")
     print("test")
-

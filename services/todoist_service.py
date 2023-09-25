@@ -1,15 +1,15 @@
-import os
 from datetime import datetime, time, timedelta
 
 import pandas as pd
 from dateutil import parser
+from quarter_lib.akeyless import get_secrets
+from quarter_lib.logging import setup_logging
 from quarter_lib_old.todoist import move_item_to_project, update_due, complete_task_by_title
 from todoist_api_python.api import TodoistAPI
 
 from models.db_models import new_book, reading_session
 from models.tasks import zotero_task
-from quarter_lib.akeyless import get_secrets
-from quarter_lib.logging import setup_logging
+from services.telegram_service import send_to_telegram
 
 END_TIME = time(hour=6, minute=0, second=0)
 
@@ -17,6 +17,7 @@ TODOIST_TOKEN = get_secrets(["todoist/token"])
 TODOIST_API = TodoistAPI(TODOIST_TOKEN)
 
 logger = setup_logging(__name__)
+
 
 async def add_book_finished_task(item: reading_session):
     task = TODOIST_API.add_task(
@@ -31,7 +32,7 @@ async def add_book_finished_task(item: reading_session):
         )
     else:
         task = TODOIST_API.add_task(
-            "Hörbücher updaten + in einzelne Kapitel aufteilen",
+            "Hörbücher updaten + in einzelne Kapitel aufteilen + PDF runterladen",
         )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
@@ -70,7 +71,8 @@ async def add_book_reminder(item: new_book):
 
 
 async def complete_task(selected_service):
-    await complete_task_by_title(selected_service)
+    complete_task_by_title(selected_service)
+    await send_to_telegram("Task completed: " + selected_service)
 
 
 async def add_zotero_task(item: zotero_task):

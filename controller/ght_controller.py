@@ -12,7 +12,7 @@ logger.add(
     diagnose=True,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["ght"])
 
 
 @logger.catch
@@ -20,7 +20,10 @@ router = APIRouter()
 async def get_body(request: Request):
     ght_data = await request.json()
     logger.info("service: " + str(ght_data))
-    add_ght_entry(ght_data)
+    error_count = add_ght_entry(ght_data)
+    if error_count > 0:
+        return {"error": "error"}
+    return {"success": "success"}
 
 
 @logger.catch

@@ -27,4 +27,6 @@ def add_timer(item: timer):
             connection.commit()
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
+    except Exception as e:
+        logger.error("Exception: {error}".format(error=e))
     close_server_connection(connection)

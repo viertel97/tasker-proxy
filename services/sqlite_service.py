@@ -16,13 +16,13 @@ def update_koreader_tables(file_path):
     sqlite_connection.close()
 
     engine = create_sqlalchemy_engine()
-    update_table_with_dataframe("koreader_book", df_book, ["id"], engine)
-    update_table_with_dataframe("koreader_page_stat_data", df_page_stat_data, ["id_book", "page", "start_time"], engine)
+    update_result_koreader_book = update_table_with_dataframe("koreader_book", df_book, ["id"], engine)
+    update_result_koreader_page_stat_data = update_table_with_dataframe("koreader_page_stat_data", df_page_stat_data,
+                                                                        ["id_book", "page", "start_time"], engine)
 
-    # df_book.to_sql("koreader_book", con=engine, if_exists="append", index=False)
-    # df_page_stat_data.to_sql("koreader_page_stat_data", con=engine, if_exists="append", index=False)
     engine.dispose()
     logger.info("update_koreader_tables finished")
+    return update_result_koreader_book, update_result_koreader_page_stat_data
 
 
 def update_table_with_dataframe(table_name, new_data, unique_columns, engine):
@@ -36,9 +36,10 @@ def update_table_with_dataframe(table_name, new_data, unique_columns, engine):
     if not new_records.empty:
         new_records.drop('_merge', axis=1, inplace=True)
         logger.info(f"Inserting {len(new_records)} new records into {table_name}")
-        new_records.to_sql(table_name, engine, if_exists='append', index=False)
+        result = new_records.to_sql(table_name, engine, if_exists='append', index=False)
+        if not result:
+            return 0
+        return result
     else:
         logger.info(f"No new records to insert into {table_name}")
-
-    # Close the database connection
-    engine.dispose()
+        return 0

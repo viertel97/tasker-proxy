@@ -2,7 +2,7 @@ import os
 import re
 
 from fastapi import APIRouter, Request
-from loguru import logger
+from quarter_lib.logging import setup_logging
 from quarter_lib_old.easy_voice_recorder import get_logs_from_recording
 from quarter_lib_old.file_helper import get_config
 
@@ -17,20 +17,16 @@ from services.session_service import (
     add_reading_session,
     add_yoga_session,
 )
+from services.telegram_service import send_to_telegram
 from services.todoist_service import (
     add_book_finished_task,
     add_book_reminder,
     complete_task,
 )
 
-logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+logger = setup_logging(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["session"])
 
 proxy_mapping_dict = get_config("tasker_mapping.json")
 habit_tracker_mapping_dict = get_config("habit_tracker_mapping.json")
@@ -44,6 +40,7 @@ async def proxy(service: str):
     logger.info("service: " + service)
     selected_service = proxy_mapping_dict[service]
     await complete_task(selected_service)
+    return {"message": "Task completed in background"}
 
 
 @logger.catch
@@ -53,28 +50,36 @@ async def get_drink(request: Request):
     logger.info("service: " + str(ght_data))
 
 
+
 @logger.catch
 @router.post("/habit-tracker/sport/{service}")
 async def habit_tracker(service: str):
     logger.info("habit-tracker: " + service)
     service = habit_tracker_mapping_dict[service]
-    track_habit(service)
+    await track_habit(service)
     await complete_task(proxy_mapping_dict["sport"])
+
+    return {"message": "Task added in background"}
 
 
 @logger.catch
 @router.post("/habit-tracker/meditation")
 async def track_meditation(item: meditation_session):
-    error_flag = add_meditation_session(item)
+    error_flag = await add_meditation_session(item)
+    logger.info("error during DB insert: " + str(error_flag))
     if not error_flag:
         selected_service = proxy_mapping_dict["meditation-evening"]
         await complete_task(selected_service)
+        return {"message": "Task completed in background"}
+    else:
+        return {"message": "Error"}
 
 
 @logger.catch
 @router.post("/habit-tracker/yoga")
 async def track_meditation(item: yoga_session):
-    add_yoga_session(item)
+    await add_yoga_session(item)
+    return {"message": "Yoga session added in the background"}
 
 
 @logger.catch
@@ -86,6 +91,7 @@ async def track_reading(item: reading_session):
         update_reading_page_finished(item)
     selected_service = proxy_mapping_dict["reading"]
     await complete_task(selected_service)
+    return {"message": "Reading session added in the background"}
 
 
 @logger.catch
@@ -93,6 +99,7 @@ async def track_reading(item: reading_session):
 async def track_reading(item: new_book):
     update_reading_page(item)
     await add_book_reminder(item)
+    return {"message": "New book added in the background"}
 
 
 @logger.catch
@@ -107,3 +114,5 @@ async def create_file(request: Request, context: str):
     with open(file_path, "wb") as f:
         f.write(temp[1].encode("ISO-8859-1"))
     get_logs_from_recording(file_path, file_name, context)
+    await send_to_telegram("New recording with the context: " + context + " was added")
+    return {"file_name": file_name}

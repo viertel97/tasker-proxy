@@ -2,6 +2,7 @@ import os
 
 from fastapi import APIRouter
 from loguru import logger
+
 from models.db_models import app_usage, power
 from services.shield_service import add_app_usage, add_start_stop
 
@@ -12,7 +13,7 @@ logger.add(
     diagnose=True,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["shield"])
 
 
 @logger.catch

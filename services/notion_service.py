@@ -5,9 +5,11 @@ from datetime import datetime, time
 import pandas as pd
 import requests
 from loguru import logger
-from quarter_lib_old.file_helper import get_config, get_value
 from quarter_lib.akeyless import get_secrets
+from quarter_lib_old.file_helper import get_config, get_value
+
 from models.db_models import new_book, reading_session
+from services.telegram_service import send_to_telegram
 
 api_key = get_secrets(["notion/token"])
 
@@ -131,10 +133,11 @@ def update_reading_page_finished(item: reading_session):
         logger.error("book with '{title}' was not found on Reading List".format(title=item.title))
 
 
-def track_habit(selected_service):
+async def track_habit(selected_service):
     database = get_value("habit_tracker", "name", DATABASES)
     page = get_page_for_date(
         datetime.today(),
         database["id"],
     )
     update_notion_habit_tracker_page(page, selected_service)
+    await send_to_telegram("Habit '{habit}' was tracked".format(habit=selected_service))

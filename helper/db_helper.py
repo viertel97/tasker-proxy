@@ -5,13 +5,11 @@ from loguru import logger
 from quarter_lib.akeyless import get_target
 from sqlalchemy import create_engine
 import urllib.parse
+from quarter_lib.logging import setup_logging
 
-logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+logger = setup_logging(__file__)
+
+
 DB_USER_NAME, DB_HOST_NAME, DB_PASSWORD, DB_PORT, DB_NAME = get_target("private")
 MONICA_DB_USER_NAME, MONICA_DB_HOST_NAME, MONICA_DB_PASSWORD, MONICA_DB_PORT, MONICA_DB_NAME = get_target("monica")
 

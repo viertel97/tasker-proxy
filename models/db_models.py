@@ -1,7 +1,5 @@
 import os
-from datetime import datetime
-from sqlite3 import Timestamp
-from typing import List, Optional
+from typing import Optional
 
 from loguru import logger
 from pydantic import BaseModel
@@ -21,7 +19,7 @@ class Exercise(DefaultModel):
 
 
 class meditation_session(Exercise):
-    pass
+    selected_duration: int
 
 
 class yoga_session(Exercise):

@@ -50,10 +50,11 @@ async def add_meditation_session(item: meditation_session):
                     item.end,
                     item.end.tzinfo.utcoffset(item.end).seconds,
                     item.type,
+                    item.selected_duration
                 )
             )
             cursor.execute(
-                "INSERT INTO meditation (start, start_offset, end, end_offset, type) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO meditation (start, start_offset, end, end_offset, type, selected_duration) VALUES (%s, %s, %s, %s, %s, %s)",
                 values,
             )
             connection.commit()

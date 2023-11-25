@@ -48,6 +48,9 @@ router = APIRouter()
 
 [app.include_router(controller.router, dependencies=[Depends(log_request_info)]) for controller in controllers]
 
+@app.get("/")
+def health():
+    return {"status": "ok"}
 
 @app.post("/blabla")
 async def test():

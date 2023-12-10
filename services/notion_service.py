@@ -47,7 +47,10 @@ def get_page_for_date(date, database_id):
         if not r["has_more"]:
             break
     df = pd.json_normalize(result_list, sep="~")
-    return df.loc[df["properties~Date~date~start"] == date.strftime("%Y-%m-%d")].iloc[0]
+    filtered_df = df.loc[df["properties~Date~date~start"] == date.strftime("%Y-%m-%d")]
+    if len(filtered_df) == 0:
+        return None
+    return filtered_df.iloc[0]
 
 
 def get_previous_multi_select_content(page, property):
@@ -79,6 +82,23 @@ def update_notion_habit_tracker_page(page, completed_habit):
         )
     )
 
+def add_notion_habit_tracker_page(selected_service, database_id):
+    url = base_url + "pages"
+    data = {
+        "parent": {"type": "database_id", "database_id": database_id},
+        "properties": {
+            "Name": {"type": "title", "title": [{"type": "text", "text": {"content": datetime.today().strftime("%B %e, %Y")}}]},
+            "Sport": {"multi_select": [{"name": selected_service}]},
+            "Date": {"date": {"start": datetime.today().strftime("%Y-%m-%d")}},
+        },
+    }
+
+    r = requests.post(
+        url,
+        data=json.dumps(data),
+        headers=headers,
+    ).json()
+    logger.info("added habit '{habit}' to Habit Tracker".format(habit=selected_service))
 
 def update_reading_page(item: new_book):
     url = base_url + "pages"
@@ -133,11 +153,17 @@ def update_reading_page_finished(item: reading_session):
         logger.error("book with '{title}' was not found on Reading List".format(title=item.title))
 
 
+
+
+
 async def track_habit(selected_service):
     database = get_value("habit_tracker", "name", DATABASES)
     page = get_page_for_date(
         datetime.today(),
         database["id"],
     )
-    update_notion_habit_tracker_page(page, selected_service)
+    if page:
+        update_notion_habit_tracker_page(page, selected_service)
+    else:
+        add_notion_habit_tracker_page(selected_service, database["id"])
     await send_to_telegram("Habit '{habit}' was tracked".format(habit=selected_service))

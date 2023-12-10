@@ -14,7 +14,7 @@ from services.telegram_service import send_to_telegram
 api_key = get_secrets(["notion/token"])
 
 base_url = "https://api.notion.com/v1/"
-headers = {
+HEADERS = {
     "Authorization": "Bearer " + api_key,
     "Content-Type": "application/json",
     "Notion-Version": "2021-08-16",
@@ -33,17 +33,21 @@ logger.add(
 
 def get_page_for_date(date, database_id):
     url = base_url + "databases/" + database_id + "/query"
+    body = {
+        "filter": {
+            "property": "Date",
+            "date": {
+                "equals": date.strftime("%Y-%m-%d")
+            }
+        }
+    }
+
     result_list = []
-    body = None
     while True:
-        r = (
-            requests.post(url, headers=headers).json()
-            if body is None
-            else requests.post(url, data=json.dumps(body), headers=headers).json()
-        )
+        r = requests.post(url, data=json.dumps(body), headers=HEADERS).json()
         for results in r["results"]:
             result_list.append(results)
-        body = {"start_cursor": r.get("next_cursor")}
+        body["start_cursor"] = r.get("next_cursor")
         if not r["has_more"]:
             break
     df = pd.json_normalize(result_list, sep="~")
@@ -75,7 +79,7 @@ def get_multi_select_data(page, habit):
 def update_notion_habit_tracker_page(page, completed_habit):
     url = base_url + "pages/" + page.id
     data = get_multi_select_data(page, completed_habit)
-    r = requests.patch(url, data=json.dumps(data), headers=headers).json()
+    r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
     logger.info(
         "'timer' ({completed_habit}) checked on page {page_id}'".format(
             completed_habit=completed_habit, page_id=page.id
@@ -96,7 +100,7 @@ def add_notion_habit_tracker_page(selected_service, database_id):
     r = requests.post(
         url,
         data=json.dumps(data),
-        headers=headers,
+        headers=HEADERS,
     ).json()
     logger.info("added habit '{habit}' to Habit Tracker".format(habit=selected_service))
 
@@ -114,7 +118,7 @@ def update_reading_page(item: new_book):
     r = requests.post(
         url,
         data=json.dumps(data),
-        headers=headers,
+        headers=HEADERS,
     ).json()
     logger.info("added book '{title}' (type: {type}) to Reading List".format(title=item.title, type=item.type))
 
@@ -132,7 +136,7 @@ def update_reading_page_finished(item: reading_session):
     r = requests.post(
         url,
         data=json.dumps(data),
-        headers=headers,
+        headers=HEADERS,
     ).json()
     if "results" in r.keys() and len(r["results"]) > 0:
         if len(r["results"]) > 1:
@@ -147,7 +151,7 @@ def update_reading_page_finished(item: reading_session):
                 },
             },
         }
-        r = requests.patch(url, data=json.dumps(data), headers=headers).json()
+        r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
         logger.info("book with '{title}' was updated with 'Dates Read'-end at {end}".format(title=item.title, end=end))
     else:
         logger.error("book with '{title}' was not found on Reading List".format(title=item.title))

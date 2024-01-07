@@ -71,7 +71,7 @@ async def add_book_reminder(item: new_book):
 
 
 async def complete_task(selected_service):
-    await complete_task_by_title(selected_service)
+    complete_task_by_title(selected_service)
     await send_to_telegram("Task completed: " + selected_service)
 
 

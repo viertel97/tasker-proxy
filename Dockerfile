@@ -7,7 +7,8 @@ COPY requirements.txt .
 
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install -y ffmpeg
+RUN apt-get install -y ffmpeg flac
+
 
 
 RUN pip install -r requirements.txt

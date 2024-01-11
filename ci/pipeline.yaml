@@ -10,10 +10,7 @@ resources:
 variables:
 - group: common
 - name: multiarch
-  ${{ if eq(PLATFORMS, 'linux/arm64') }}:
-    value: false
-  ${{ else }}:
-    value: true
+  value: ${{ if eq(variables['Build.SourceBranchName'], 'main') }}true${{ else }}false${{ endif }}
 
 extends:
   template: pipeline-template.yaml

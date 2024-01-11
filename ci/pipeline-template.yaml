@@ -8,7 +8,7 @@ parameters:
   type: string # data type of the parameter; required
 
 variables:
-- group: PROD
+- group: common
 - name: multiarch
   ${{ if eq(common['PLATFORMS'], 'linux/arm64') }}:
     value: false

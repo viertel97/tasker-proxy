@@ -27,11 +27,11 @@ stages:
       displayName: Pull latest for layer caching
       continueOnError: true
 
-    - ${{ if eq($(PLATFORMS), 'linux/arm64') }}:
+    - ${{ if eq(common['PLATFORMS'], 'linux/arm64') }}:
       - script: |
           docker build --cache-from=ghcr.io/viertel97/${{parameters.repository}}:latest --build-arg PAT=${PAT} -t ghcr.io/viertel97/${{parameters.repository}}:latest -f Dockerfile .
           docker push ghcr.io/viertel97/${{parameters.repository}}:latest
-    - ${{ if ne($(PLATFORMS), '') }}:
+    - ${{ if ne(common['PLATFORMS'], '') }}:
       - script: |
           # Install buildx
           docker buildx create --use

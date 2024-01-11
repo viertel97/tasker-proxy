@@ -7,6 +7,7 @@ parameters:
 - name: repository # name of the parameter; required
   type: string # data type of the parameter; required
 
+
 stages:
 - stage: Docker
   displayName: Build and Push Docker Image
@@ -26,13 +27,19 @@ stages:
       displayName: Pull latest for layer caching
       continueOnError: true
 
-    - script: |
-        # Install buildx
-        docker buildx create --use
-        docker buildx inspect --bootstrap
-  
-        # Build and push multi-platform Docker image
-        docker buildx build --cache-from=ghcr.io/viertel97/${{parameters.repository}}:latest --build-arg PAT=${PAT} --push --platform ${PLATFORMS} -t ghcr.io/viertel97/${{parameters.repository}}:latest -f Dockerfile .  
+    - ${{ if eq({PLATFORMS}, 'linux/arm64') }}:
+      - script: |
+          docker build --cache-from=ghcr.io/viertel97/${{parameters.repository}}:latest --build-arg PAT=${PAT} -t ghcr.io/viertel97/${{parameters.repository}}:latest -f Dockerfile .
+          docker push ghcr.io/viertel97/${{parameters.repository}}:latest
+    - ${{ if ne({PLATFORMS}, '') }}:
+      - script: |
+          # Install buildx
+          docker buildx create --use
+          docker buildx inspect --bootstrap
+    
+          # Build and push multi-platform Docker image
+          docker buildx build --cache-from=ghcr.io/viertel97/${{parameters.repository}}:latest --build-arg PAT=${PAT} --push --platform ${PLATFORMS} -t ghcr.io/viertel97/${{parameters.repository}}:latest -f Dockerfile .  
+    
+          docker buildx stop
+        displayName: 'Build and Push Multi-Platform Docker Image'
 
-        docker buildx stop
-      displayName: 'Build and Push Multi-Platform Docker Image'

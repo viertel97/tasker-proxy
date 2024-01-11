@@ -15,4 +15,4 @@ extends:
   template: pipeline-template.yaml
   parameters:
       repository: "tasker-proxy"
-      multiarch: "false"
+      multiarch:  $[ common.PLATFORMS ]

@@ -10,11 +10,13 @@ resources:
 variables:
 - group: common
 - name: multiarch
-  ${{ if eq(common['PLATFORMS'], 'linux/arm64') }}:
+  ${{ if eq(PLATFORMS, 'linux/arm64') }}:
     value: false
   ${{ else }}:
     value: true
+
 extends:
   template: pipeline-template.yaml
   parameters:
       repository: "tasker-proxy"
+      multiarch: "${{variables.multiarch}}"

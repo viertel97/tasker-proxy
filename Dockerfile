@@ -8,8 +8,7 @@ COPY requirements.txt .
 
 RUN apt-get update && apt-get install --no-install-recommends -y ffmpeg flac && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -r requirements.txt
-RUN pip install --upgrade --extra-index-url https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure.com/viertel/Quarter-Lib-Old/_packaging/Quarter-Lib-Old/pypi/simple/ quarter-lib-old
+RUN pip install -r requirements.txt && pip install --upgrade --extra-index-url https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure.com/viertel/Quarter-Lib-Old/_packaging/Quarter-Lib-Old/pypi/simple/ quarter-lib-old
 
 # Stage 2: Create the final lightweight image
 FROM python:3.9-slim-buster

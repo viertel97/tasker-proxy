@@ -7,6 +7,14 @@ parameters:
 - name: repository # name of the parameter; required
   type: string # data type of the parameter; required
 
+variables:
+- group: PROD
+- name: multiarch
+  ${{ if eq(common['PLATFORMS'], 'linux/arm64') }}:
+    value: false
+  ${{ else }}:
+    value: true
+
 
 stages:
 - stage: Docker
@@ -27,11 +35,11 @@ stages:
       displayName: Pull latest for layer caching
       continueOnError: true
 
-    - ${{ if eq(common['PLATFORMS'], 'linux/arm64') }}:
+    - ${{ if eq(multiarch, 'false') }}:
       - script: |
           docker build --cache-from=ghcr.io/viertel97/${{parameters.repository}}:latest --build-arg PAT=${PAT} -t ghcr.io/viertel97/${{parameters.repository}}:latest -f Dockerfile .
           docker push ghcr.io/viertel97/${{parameters.repository}}:latest
-    - ${{ if ne(common['PLATFORMS'], '') }}:
+    - ${{ if ne(multiarch, 'true') }}:
       - script: |
           # Install buildx
           docker buildx create --use

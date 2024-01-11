@@ -21,12 +21,18 @@ stages:
         containerRegistry: 'GHCR'
         command: 'login'
       displayName: 'Login to GHCR'
+
+    - script: "docker pull ghcr.io/viertel97/${{parameters.repository}}:latest"
+      displayName: Pull latest for layer caching
+      continueOnError: true
+
     - script: |
         # Install buildx
         docker buildx create --use
         docker buildx inspect --bootstrap
   
         # Build and push multi-platform Docker image
-        docker buildx build --build-arg PAT=${PAT} --push --platform linux/arm64,linux/amd64 -t ghcr.io/viertel97/${{parameters.repository}}:latest -f Dockerfile .
+        docker buildx build --cache-from=ghcr.io/viertel97/${{parameters.repository}}:latest --build-arg PAT=${PAT} --push --platform ${PLATFORMS} -t ghcr.io/viertel97/${{parameters.repository}}:latest -f Dockerfile .  
+
         docker buildx stop
       displayName: 'Build and Push Multi-Platform Docker Image'

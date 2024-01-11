@@ -10,9 +10,8 @@ resources:
 variables:
 - group: common
 
-
 extends:
   template: pipeline-template.yaml
   parameters:
       repository: "tasker-proxy"
-      multiarch:  $[ common.PLATFORMS ]
+      multiarch: "false"

@@ -7,13 +7,7 @@ parameters:
 - name: repository # name of the parameter; required
   type: string # data type of the parameter; required
 
-variables:
-- group: common
-- name: multiarch
-  ${{ if eq(common['PLATFORMS'], 'linux/arm64') }}:
-    value: false
-  ${{ else }}:
-    value: true
+
 
 
 stages:

@@ -9,11 +9,10 @@ resources:
 
 variables:
 - group: common
-- name: multiarch
-  value: ${{ if eq(variables['Build.SourceBranchName'], 'main') }}true${{ else }}false${{ endif }}
+
 
 extends:
   template: pipeline-template.yaml
   parameters:
       repository: "tasker-proxy"
-      multiarch: "${{variables.multiarch}}"
+      multiarch: "false"

@@ -131,7 +131,7 @@ def update_reading_page_finished(item: reading_session):
     data = {
         "filter": {
             "or": [
-                {"property": "Title", "title": {"equals": item.title}},
+                {"property": "Sanitized-Title", "title": {"equals": item.title}},
             ]
         }
     }

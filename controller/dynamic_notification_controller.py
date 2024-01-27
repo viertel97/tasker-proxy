@@ -27,7 +27,7 @@ def generate_html_list(list, title):
 @logger.catch
 @router.get("/tasker/notification")
 async def preparations():
-    tasks = await get_rework_tasks()
+    tasks = get_rework_tasks()
     events = get_events_for_rework()
     return_str = "<h1>Nach- oder Vorarbeiten?</h1>"
     if tasks:

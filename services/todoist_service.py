@@ -104,9 +104,8 @@ async def update_due_date(task_id, due):
     return update_due(task_id, due)
 
 
-async def get_rework_tasks():
-    df_items = pd.DataFrame([item.__dict__ for item in TODOIST_API.get_tasks()])
-    df_items = df_items[df_items.project_id == "2244725398"]
+def get_rework_tasks():
+    df_items = pd.DataFrame([item.__dict__ for item in TODOIST_API.get_tasks(project_id="2244725398")])
     df_items = df_items[df_items.content.str.contains("nacharbeiten")]
     df_items.content = df_items.content.str.replace(" - nacharbeiten & Tracker pflegen", "")
     df_items.content = df_items.content.str.replace(" nacharbeiten", "")

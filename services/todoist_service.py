@@ -51,7 +51,22 @@ async def add_book_finished_task(item: reading_session):
     move_item_to_project(task.id, "2244725398")
 
 
-async def add_task(title, due=None, project_id=None):
+async def add_task_with_check(title, due=None, project_id=None):
+    tasks = TODOIST_API.get_tasks(project_id=project_id)
+    if len(tasks) > 0:
+        found_tasks = [task for task in tasks if task.content == title]
+        if len(found_tasks) > 0:
+            for task in found_tasks:
+                TODOIST_API.delete_task(task.id)
+    task = TODOIST_API.add_task(title)
+    if project_id:
+        move_item_to_project(task.id, project_id)
+    if due:
+        update_due(task.id, due={"string": due})
+    return task
+
+
+async def add_task(title: object, due=None, project_id=None):
     task = TODOIST_API.add_task(title)
     if project_id:
         move_item_to_project(task.id, project_id)

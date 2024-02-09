@@ -38,9 +38,8 @@ controllers = [
 
 logger = setup_logging(__name__)
 
-logger.info(platform)
-DEBUG = (platform == "darwin" or platform == "win32" or platform == "Windows")
 logger.info(f"DEBUG: {DEBUG}")
+
 app = FastAPI(debug=DEBUG, openapi_tags=tags_metadata,
               title=title,
               description=description)
@@ -48,9 +47,11 @@ router = APIRouter()
 
 [app.include_router(controller.router, dependencies=[Depends(log_request_info)]) for controller in controllers]
 
+
 @app.get("/")
 def health():
     return {"status": "ok"}
+
 
 @app.post("/blabla")
 async def test():

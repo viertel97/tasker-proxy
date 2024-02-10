@@ -19,7 +19,7 @@ from controller import (
     timer_controller, dynamic_notification_controller, smart_home_controller, leaf_controller, call_controller,
     wol_controller
 )
-from helper.network_helper import log_request_info
+from helper.network_helper import log_request_info, DEBUG
 from services.telegram_service import send_to_telegram
 
 controllers = [

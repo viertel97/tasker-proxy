@@ -44,6 +44,16 @@ spec:
                 secretKeyRef:
                   name: akeyless-secret
                   key: access_key
+            - name: habit_list
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-proxy-secret
+                  key: habit_list
+            - name: tasker_mapping
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-proxy-secret
+                  key: tasker_mapping
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

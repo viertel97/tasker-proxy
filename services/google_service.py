@@ -12,20 +12,6 @@ logger.add(
     diagnose=True,
 )
 
-SCOPES = [
-    "https://www.googleapis.com/auth/calendar",
-]
-if os.name == "nt":
-    pickle_path = r"D:\OneDrive\Code\todoist-refresher\config\token.pickle"
-    creds_path = r"D:\OneDrive\Code\todoist-refresher\config\cred7.json"
-else:
-    pickle_path = "/home/pi/code/todoist-refresher/config/token.pickle"
-    creds_path = "/home/pi/code/todoist-refresher/config/cred7.json"
-
-creds = None
-
-DEBUG = os.name == "nt"
-
 
 def get_events_from_calendar(calendar_name, calendar_dict, calendar_service, query_params=None):
     event_list = []

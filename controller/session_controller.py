@@ -6,6 +6,7 @@ from quarter_lib.logging import setup_logging
 from quarter_lib_old.easy_voice_recorder import get_logs_from_recording
 from quarter_lib_old.file_helper import get_config
 
+from helper.web_helper import get_tasker_mapping_from_web, get_habit_tracker_mapping_from_web
 from models.db_models import meditation_session, new_book, reading_session, yoga_session
 from services.notion_service import (
     track_habit,
@@ -28,8 +29,8 @@ logger = setup_logging(__name__)
 
 router = APIRouter(tags=["session"])
 
-proxy_mapping_dict = get_config("tasker_mapping.json")
-habit_tracker_mapping_dict = get_config("habit_tracker_mapping.json")
+proxy_mapping_dict = get_tasker_mapping_from_web()
+habit_tracker_mapping_dict = get_habit_tracker_mapping_from_web()
 
 RECORDING_FILE = "temp_recording.mp3"
 

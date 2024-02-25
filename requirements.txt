@@ -14,5 +14,3 @@ SpeechRecognition==3.8.1
 quarter_lib==0.0.22
 SQLAlchemy==2.0.17
 python-telegram-bot==20.0
-
-quarter-lib-old

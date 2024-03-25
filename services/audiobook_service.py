@@ -4,6 +4,7 @@ from loguru import logger
 
 from models.tasks import zotero_task
 from services.notion_service import update_reading_page_finished
+from services.telegram_service import send_to_telegram
 from services.todoist_service import add_book_finished_task, add_zotero_task
 
 logger.add(
@@ -21,3 +22,4 @@ async def add_audiobook_task(item: zotero_task):
 async def add_audiobook_finished_task(item: zotero_task):
     await add_book_finished_task(item)
     update_reading_page_finished(item)
+    await send_to_telegram(f"Audiobook {item.title} finished – Tasks were added to Todoist and date ")

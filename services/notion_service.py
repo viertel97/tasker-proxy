@@ -158,6 +158,7 @@ def update_reading_page_finished(item: reading_session):
         logger.info("book with '{title}' was updated with 'Dates Read'-end at {end}".format(title=item.title, end=end))
     else:
         logger.error("book with '{title}' was not found on Reading List".format(title=item.title))
+        raise Exception("book with '{title}' was not found on Reading List".format(title=item.title))
 
 
 async def track_habit(selected_service):

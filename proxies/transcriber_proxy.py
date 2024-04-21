@@ -1,12 +1,8 @@
 import requests
 
-from helper.network_helper import get_url
-
-URL = get_url("transcriber-service")
-
-URL = "http://192.168.178.49:9200"
+from config.configuration import TRANSCRIBER_SERVICE_URL
 
 
 async def get_bookmark_transcriptions(path, xml_data):
-    return requests.post(URL + "/bookmark_transcriptions",
+    return requests.post(TRANSCRIBER_SERVICE_URL + "/bookmark_transcriptions",
                          json={"path": path, "xml_data": xml_data}).json()

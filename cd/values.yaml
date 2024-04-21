@@ -9,6 +9,8 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
+  env:
+      TRANSCRIBER_SERVICE_URL: "http://transcriber-service.custom.svc.cluster.local:80"
 
 imagePullSecrets:
   - name: ghcr-secret

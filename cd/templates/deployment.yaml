@@ -54,6 +54,10 @@ spec:
                 secretKeyRef:
                   name: tasker-proxy-secret
                   key: tasker_mapping
+          {{- range $name, $value := .Values.image.env}}
+            - name: {{ $name }}
+              value: {{ $value | quote}}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

@@ -1,0 +1,3 @@
+import os
+
+TRANSCRIBER_SERVICE_URL = os.getenv("TRANSCRIBER_SERVICE_URL")

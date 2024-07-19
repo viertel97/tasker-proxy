@@ -14,13 +14,21 @@ MAX_LENGTH_PER_MESSAGE = 4096 - 50
 async def send_to_telegram(message):
     if len(message) < MAX_LENGTH_PER_MESSAGE:
         await telegram.Bot(TELEGRAM_TOKEN).send_message(
-            chat_id=int(CHAT_ID), text=message, parse_mode=ParseMode.HTML, disable_notification=True
+            chat_id=int(CHAT_ID),
+            text=message,
+            parse_mode=ParseMode.HTML,
+            disable_notification=True,
         )
     else:
         messages_needed = len(message) // MAX_LENGTH_PER_MESSAGE + 1
         for i in range(messages_needed):
-            temp = message[i * MAX_LENGTH_PER_MESSAGE: (i + 1) * MAX_LENGTH_PER_MESSAGE]
+            temp = message[
+                i * MAX_LENGTH_PER_MESSAGE : (i + 1) * MAX_LENGTH_PER_MESSAGE
+            ]
             await telegram.Bot(TELEGRAM_TOKEN).send_message(
-                chat_id=int(CHAT_ID), text=temp, parse_mode=ParseMode.HTML, disable_notification=True
+                chat_id=int(CHAT_ID),
+                text=temp,
+                parse_mode=ParseMode.HTML,
+                disable_notification=True,
             )
             time.sleep(5)

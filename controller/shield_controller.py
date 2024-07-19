@@ -1,17 +1,10 @@
-import os
-
 from fastapi import APIRouter
-from loguru import logger
-
+from quarter_lib.logging import setup_logging
 from models.db_models import app_usage, power
 from services.shield_service import add_app_usage, add_start_stop
 
-logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+logger = setup_logging(__name__)
+
 
 router = APIRouter(tags=["shield"])
 
@@ -24,5 +17,5 @@ async def track_timer(item: app_usage):
 
 @logger.catch
 @router.post("/shield/power")
-async def track_timer(item: power):
+async def track_start_stop(item: power):
     add_start_stop(item)

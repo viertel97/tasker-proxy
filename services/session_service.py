@@ -50,7 +50,7 @@ async def add_meditation_session(item: meditation_session):
                     item.end,
                     item.end.tzinfo.utcoffset(item.end).seconds,
                     item.type,
-                    item.selected_duration
+                    item.selected_duration,
                 )
             )
             cursor.execute(

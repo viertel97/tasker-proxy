@@ -6,7 +6,12 @@ from loguru import logger
 from services.ght_service import add_ght_entry, get_ght_questions, add_wellbeing_entry
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
@@ -29,10 +34,10 @@ async def ght_questions(service: str):
     result = get_ght_questions(service)
     return result
 
+
 @logger.catch
 @router.post("/wellbeing")
 async def add_wellbeing(request: Request):
     wellbeing_data = await request.json()
     logger.info("service: " + str("wellbeing"))
     add_wellbeing_entry(wellbeing_data)
-

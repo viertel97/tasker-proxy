@@ -7,7 +7,12 @@ from pydantic import BaseModel
 from models.default_model import DefaultModel
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,

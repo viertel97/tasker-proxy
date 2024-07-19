@@ -1,6 +1,5 @@
 import traceback
 from pathlib import Path
-from sys import platform
 
 import uvicorn
 from fastapi import APIRouter, Depends, status
@@ -16,8 +15,12 @@ from controller import (
     ght_controller,
     session_controller,
     shield_controller,
-    timer_controller, dynamic_notification_controller, smart_home_controller, leaf_controller, call_controller,
-    wol_controller
+    timer_controller,
+    dynamic_notification_controller,
+    smart_home_controller,
+    leaf_controller,
+    call_controller,
+    wol_controller,
 )
 from helper.network_helper import log_request_info, DEBUG
 from services.telegram_service import send_to_telegram
@@ -33,19 +36,22 @@ controllers = [
     smart_home_controller,
     leaf_controller,
     call_controller,
-    wol_controller
+    wol_controller,
 ]
 
 logger = setup_logging(__name__)
 
 logger.info(f"DEBUG: {DEBUG}")
 
-app = FastAPI(debug=DEBUG, openapi_tags=tags_metadata,
-              title=title,
-              description=description)
+app = FastAPI(
+    debug=DEBUG, openapi_tags=tags_metadata, title=title, description=description
+)
 router = APIRouter()
 
-[app.include_router(controller.router, dependencies=[Depends(log_request_info)]) for controller in controllers]
+[
+    app.include_router(controller.router, dependencies=[Depends(log_request_info)])
+    for controller in controllers
+]
 
 
 @app.get("/")
@@ -63,7 +69,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
     logger.info(f"{request}: {exc_str}")
     content = {"status_code": 10422, "message": exc_str, "data": None}
-    return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 @app.exception_handler(Exception)
@@ -71,7 +79,9 @@ async def custom_exception_handler(request: Request, exc: Exception):
     items = request.path_params.items()
     headers = request.headers.items()
 
-    request_logging_string = f"{request.method} {request.url}\n\n Headers:\n{headers}\n\nItems:\n{items}"
+    request_logging_string = (
+        f"{request.method} {request.url}\n\n Headers:\n{headers}\n\nItems:\n{items}"
+    )
     exception_logging_string = f"{exc.__class__.__name__}: {exc}\n\n{''.join(traceback.TracebackException.from_exception(exc).format())}"
     logging_string = f"Exception:\n{exception_logging_string}\n---------\nRequest:\n{request_logging_string}\n\n"
     await send_to_telegram(logging_string)
@@ -89,6 +99,8 @@ async def custom_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     print("lol")
     if DEBUG:
-        uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", reload=True, port=9000)
+        uvicorn.run(
+            f"{Path(__file__).stem}:app", host="0.0.0.0", reload=True, port=9000
+        )
     else:
         uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", port=9000, workers=1)

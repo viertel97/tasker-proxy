@@ -43,16 +43,23 @@ async def upload_file(path: Annotated[str, Form()], bookmark_file: UploadFile):
     xml_data = xml_to_dict(contents)
 
     transcription_result = await get_bookmark_transcriptions(path, xml_data)
-    result_list = transcription_result['result_list']
-    title = transcription_result['title']
-    author = transcription_result['author']
+    result_list = transcription_result["result_list"]
+    title = transcription_result["title"]
+    author = transcription_result["author"]
     command_list = []
     for transcribed_bookmark in result_list:
         content = transcribed_bookmark["title"] + " - add highlight to Zotero"
 
-        if "timestamp" in transcribed_bookmark and transcribed_bookmark["timestamp"] is not None:
-            transcribed_bookmark['timestamp'] = datetime.fromisoformat(transcribed_bookmark['timestamp'])
-            recording_timestamp = transcribed_bookmark["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+        if (
+            "timestamp" in transcribed_bookmark
+            and transcribed_bookmark["timestamp"] is not None
+        ):
+            transcribed_bookmark["timestamp"] = datetime.fromisoformat(
+                transcribed_bookmark["timestamp"]
+            )
+            recording_timestamp = transcribed_bookmark["timestamp"].strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
         else:
             recording_timestamp = None
         description_dict = {
@@ -67,30 +74,36 @@ async def upload_file(path: Annotated[str, Form()], bookmark_file: UploadFile):
             "file_position": transcribed_bookmark["file_position"],
             "annotation": transcribed_bookmark["annotation"],
         }
-        desc = dumps(description_dict, indent=4, sort_keys=True, ensure_ascii=False).encode('utf8').decode()
+        desc = (
+            dumps(description_dict, indent=4, sort_keys=True, ensure_ascii=False)
+            .encode("utf8")
+            .decode()
+        )
         generated_temp_id = "_" + str(uuid.uuid4())
         command_list.append(
             {
                 "type": "item_add",
                 "temp_id": generated_temp_id,
-                "args": {"content": content, "description": desc,
-                         "project_id": "2281154095",
-                         },
+                "args": {
+                    "content": content,
+                    "description": desc,
+                    "project_id": "2281154095",
+                },
             }
         )
         command_list.append(
             {
                 "type": "note_add",
-                "args": {"content": "",
-                         "item_id": generated_temp_id,
-                         "file_attachment":
-                             {
-                                 "file_name": transcribed_bookmark['upload_result']['file_name'],
-                                 "file_size": transcribed_bookmark['upload_result']['file_size'],
-                                 "file_type": transcribed_bookmark['upload_result']['file_type'],
-                                 "file_url": transcribed_bookmark['upload_result']['file_url'],
-                             },
-                         }
+                "args": {
+                    "content": "",
+                    "item_id": generated_temp_id,
+                    "file_attachment": {
+                        "file_name": transcribed_bookmark["upload_result"]["file_name"],
+                        "file_size": transcribed_bookmark["upload_result"]["file_size"],
+                        "file_type": transcribed_bookmark["upload_result"]["file_type"],
+                        "file_url": transcribed_bookmark["upload_result"]["file_url"],
+                    },
+                },
             }
         )
 
@@ -99,8 +112,10 @@ async def upload_file(path: Annotated[str, Form()], bookmark_file: UploadFile):
         logger.error("Error while adding to Todoist")
         raise Exception("Error while adding to Todoist " + sync_command_results.text)
     logger.info(sync_command_results)
-    message = "Transcribed {} bookmarks for {} by {}".format(
-        len(result_list), title, author) + " and added them to Todoist"
+    message = (
+        "Transcribed {} bookmarks for {} by {}".format(len(result_list), title, author)
+        + " and added them to Todoist"
+    )
 
     logger.info(message)
     return message
@@ -109,7 +124,7 @@ async def upload_file(path: Annotated[str, Form()], bookmark_file: UploadFile):
 def xml_to_dict(data):
     root = ET.XML(data)
     data = []
-    for item in root.findall('./bookmark'):  # find all projects node
+    for item in root.findall("./bookmark"):  # find all projects node
         data_dict = {}  # dictionary to store content of each projects
         data_dict.update(item.attrib)  # make panelist_login the first key of the dict
         for child in item:

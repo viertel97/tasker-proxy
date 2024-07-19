@@ -17,7 +17,7 @@ async def change_status():
 
 @logger.catch
 @router.get("/status")
-async def change_status():
+async def get_status():
     temp = persistence_service.LEAVE_MONITORS_OFF
     persistence_service.LEAVE_MONITORS_OFF = False
     logger.info("Received change_status get request: result: " + str(temp))

@@ -24,7 +24,12 @@ END_TIME = time(hour=6, minute=0, second=0)
 DATABASES = get_config("databases_config.json")
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
@@ -34,12 +39,7 @@ logger.add(
 def get_page_for_date(date, database_id):
     url = base_url + "databases/" + database_id + "/query"
     body = {
-        "filter": {
-            "property": "Date",
-            "date": {
-                "equals": date.strftime("%Y-%m-%d")
-            }
-        }
+        "filter": {"property": "Date", "date": {"equals": date.strftime("%Y-%m-%d")}}
     }
 
     result_list = []
@@ -67,7 +67,9 @@ def get_previous_multi_select_content(page, property):
 
 
 def get_multi_select_data(page, habit):
-    content_list = get_previous_multi_select_content(page, "properties~Sport~multi_select")
+    content_list = get_previous_multi_select_content(
+        page, "properties~Sport~multi_select"
+    )
     content_list.append(habit)
     content_list = list(dict.fromkeys(content_list))
     data = {"properties": {"Sport": {"multi_select": []}}}
@@ -79,7 +81,7 @@ def get_multi_select_data(page, habit):
 def update_notion_habit_tracker_page(page, completed_habit):
     url = base_url + "pages/" + page.id
     data = get_multi_select_data(page, completed_habit)
-    r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
+    requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
     logger.info(
         "'timer' ({completed_habit}) checked on page {page_id}'".format(
             completed_habit=completed_habit, page_id=page.id
@@ -92,14 +94,21 @@ def add_notion_habit_tracker_page(selected_service, database_id):
     data = {
         "parent": {"type": "database_id", "database_id": database_id},
         "properties": {
-            "Name": {"type": "title",
-                     "title": [{"type": "text", "text": {"content": datetime.today().strftime("%B %e, %Y")}}]},
+            "Name": {
+                "type": "title",
+                "title": [
+                    {
+                        "type": "text",
+                        "text": {"content": datetime.today().strftime("%B %e, %Y")},
+                    }
+                ],
+            },
             "Sport": {"multi_select": [{"name": selected_service}]},
             "Date": {"date": {"start": datetime.today().strftime("%Y-%m-%d")}},
         },
     }
 
-    r = requests.post(
+    requests.post(
         url,
         data=json.dumps(data),
         headers=HEADERS,
@@ -110,20 +119,30 @@ def add_notion_habit_tracker_page(selected_service, database_id):
 def update_reading_page(item: new_book):
     url = base_url + "pages"
     data = {
-        "parent": {"type": "database_id", "database_id": "e88940d2346e4f66a8cec95faa11dcfb"},
+        "parent": {
+            "type": "database_id",
+            "database_id": "e88940d2346e4f66a8cec95faa11dcfb",
+        },
         "properties": {
-            "Title": {"type": "title", "title": [{"type": "text", "text": {"content": item.title}}]},
+            "Title": {
+                "type": "title",
+                "title": [{"type": "text", "text": {"content": item.title}}],
+            },
             "Format": {"multi_select": {"name": item.type}},
             "Dates Read": {"date": {"start": datetime.today().strftime("%Y-%m-%d")}},
         },
     }
 
-    r = requests.post(
+    requests.post(
         url,
         data=json.dumps(data),
         headers=HEADERS,
     ).json()
-    logger.info("added book '{title}' (type: {type}) to Reading List".format(title=item.title, type=item.type))
+    logger.info(
+        "added book '{title}' (type: {type}) to Reading List".format(
+            title=item.title, type=item.type
+        )
+    )
 
 
 def update_reading_page_finished(item: reading_session):
@@ -143,22 +162,39 @@ def update_reading_page_finished(item: reading_session):
     ).json()
     if "results" in r.keys() and len(r["results"]) > 0:
         if len(r["results"]) > 1:
-            logger.warning("more than one book with '{title}' was found on Reading List".format(title=item.title))
+            logger.warning(
+                "more than one book with '{title}' was found on Reading List".format(
+                    title=item.title
+                )
+            )
             return
         end = datetime.today().strftime("%Y-%m-%d")
         url = base_url + "pages/" + r["results"][0]["id"]
         data = {
             "properties": {
                 "Dates Read": {
-                    "date": {"start": r["results"][0]["properties"]["Dates Read"]["date"]["start"], "end": end}
+                    "date": {
+                        "start": r["results"][0]["properties"]["Dates Read"]["date"][
+                            "start"
+                        ],
+                        "end": end,
+                    }
                 },
             },
         }
         r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
-        logger.info("book with '{title}' was updated with 'Dates Read'-end at {end}".format(title=item.title, end=end))
+        logger.info(
+            "book with '{title}' was updated with 'Dates Read'-end at {end}".format(
+                title=item.title, end=end
+            )
+        )
     else:
-        logger.error("book with '{title}' was not found on Reading List".format(title=item.title))
-        raise Exception("book with '{title}' was not found on Reading List".format(title=item.title))
+        logger.error(
+            "book with '{title}' was not found on Reading List".format(title=item.title)
+        )
+        raise Exception(
+            "book with '{title}' was not found on Reading List".format(title=item.title)
+        )
 
 
 async def track_habit(selected_service):
@@ -167,7 +203,7 @@ async def track_habit(selected_service):
         datetime.today(),
         database["id"],
     )
-    if type(page) == pd.Series:
+    if type(page) is pd.Series:
         update_notion_habit_tracker_page(page, selected_service)
     else:
         add_notion_habit_tracker_page(selected_service, database["id"])

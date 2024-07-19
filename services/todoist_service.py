@@ -4,7 +4,11 @@ import pandas as pd
 from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.todoist import move_item_to_project, update_due, complete_task_by_title
+from quarter_lib_old.todoist import (
+    move_item_to_project,
+    update_due,
+    complete_task_by_title,
+)
 from todoist_api_python.api import TodoistAPI
 
 from models.db_models import new_book, reading_session
@@ -26,7 +30,7 @@ async def add_book_finished_task(item: reading_session):
     move_item_to_project(task.id, "2244725398")
     update_due(task.id, due={"string": "Tomorrow"})
 
-    if type(item) == reading_session:
+    if type(item) is reading_session:
         task = TODOIST_API.add_task(
             "eBook Reader updaten",
         )
@@ -45,7 +49,8 @@ async def add_book_finished_task(item: reading_session):
 
     task = TODOIST_API.add_task(
         "Vorherige Obsidian-Notizen aus dem Buch '{other}' in 10 Takeaways überführen + Impressionen, Zitate und Bonus einpflegen".format(
-            other=item.title),
+            other=item.title
+        ),
     )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
@@ -66,7 +71,7 @@ async def add_task_with_check(title, due=None, project_id=None):
     return task
 
 
-async def add_task(title: object, due=None, project_id=None):
+def add_task(title: str, due=None, project_id=None):
     task = TODOIST_API.add_task(title)
     if project_id:
         move_item_to_project(task.id, project_id)
@@ -120,21 +125,33 @@ async def update_due_date(task_id, due):
 
 
 def get_rework_tasks():
-    df_items = pd.DataFrame([item.__dict__ for item in TODOIST_API.get_tasks(project_id="2244725398")])
+    df_items = pd.DataFrame(
+        [item.__dict__ for item in TODOIST_API.get_tasks(project_id="2244725398")]
+    )
     df_items = df_items[df_items.content.str.contains("nacharbeiten")]
-    df_items.content = df_items.content.str.replace(" - nacharbeiten & Tracker pflegen", "")
+    df_items.content = df_items.content.str.replace(
+        " - nacharbeiten & Tracker pflegen", ""
+    )
     df_items.content = df_items.content.str.replace(" nacharbeiten", "")
     df_items.sort_values(by="due", inplace=True)
     item_list = df_items.to_dict(orient="records")
     result_list = []
     for item in item_list:
         result_str = str(item["content"])
-        if (item['due'] is not None):
-            if (item['due'].datetime is not None):
-                result_str += " (Due: " + parser.parse(item['due'].datetime).strftime("%d.%m.%Y %H:%M") + ")"
+        if item["due"] is not None:
+            if item["due"].datetime is not None:
+                result_str += (
+                    " (Due: "
+                    + parser.parse(item["due"].datetime).strftime("%d.%m.%Y %H:%M")
+                    + ")"
+                )
             else:
-                result_str += " (Due: " + parser.parse(item['due'].date).strftime("%d.%m.%Y") + ")"
-            if (item['priority'] != 1):
-                result_str += " (Prio: " + str(item['priority']) + ")"
+                result_str += (
+                    " (Due: "
+                    + parser.parse(item["due"].date).strftime("%d.%m.%Y")
+                    + ")"
+                )
+            if item["priority"] != 1:
+                result_str += " (Prio: " + str(item["priority"]) + ")"
             result_list.append(result_str)
     return result_list

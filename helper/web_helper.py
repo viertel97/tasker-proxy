@@ -2,22 +2,57 @@ import os
 
 import requests
 from quarter_lib.logging import setup_logging
-
+from quarter_lib.akeyless import get_secrets
 from helper.caching import ttl_cache
+
 
 logger = setup_logging(__file__)
 
-HABIT_TRACKER_MAPPING_URL = os.getenv("habit_list")
-TASKER_MAPPING_URL = os.getenv("tasker_mapping")
+
+MASTER_KEY, HABIT_TRACKER_MAPPING_BIN, TASKER_MAPPING_BIN, REWORK_EVENTS_BIN = (
+    get_secrets(
+        [
+            "jsonbin/masterkey",
+            "jsonbin/habit_tracker_mapping-bin",
+            "jsonbin/tasker_mapping-bin",
+            "jsonbin/Rework-Events-bin",
+        ]
+    )
+)
+
+
+BASE_URL = os.getenv("base_url")
+
+HABIT_TRACKER_MAPPING_URL = f"{BASE_URL}/b/{HABIT_TRACKER_MAPPING_BIN}/latest"
+TASKER_MAPPING_URL = f"{BASE_URL}/b/{TASKER_MAPPING_BIN}/latest"
+REWORK_EVENTS_URL = f"{BASE_URL}/b/{REWORK_EVENTS_BIN}/latest"
+
+
+@ttl_cache(ttl=60 * 60)
+def get_rework_events_from_web():
+    logger.info("getting rework events from web")
+    response = requests.get(
+        REWORK_EVENTS_URL,
+        headers={"User-Agent": "Mozilla/5.0", "X-Master-Key": MASTER_KEY},
+    )
+    return response.json()["record"]
+
 
 @ttl_cache(ttl=60 * 60)
 def get_habit_tracker_mapping_from_web():
     logger.info("getting habit tracker mapping from web")
-    response = requests.get(HABIT_TRACKER_MAPPING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
-    return response.json()
+    response = requests.get(
+        HABIT_TRACKER_MAPPING_URL,
+        headers={"User-Agent": "Mozilla/5.0", "X-Master-Key": MASTER_KEY},
+    )
+    return response.json()["record"]
+
 
 @ttl_cache(ttl=60 * 60)
 def get_tasker_mapping_from_web():
     logger.info("getting habits from web")
-    response = requests.get(TASKER_MAPPING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
-    return response.json()
+    response = requests.get(
+        TASKER_MAPPING_URL,
+        headers={"User-Agent": "Mozilla/5.0", "X-Master-Key": MASTER_KEY},
+    )
+    return response.json()["record"]

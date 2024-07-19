@@ -10,7 +10,12 @@ from helper.db_helper import close_server_connection
 from models.call import call
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,
@@ -23,7 +28,11 @@ INBOX_CONTACT_ID = 52
 def add_call_rework_task(item: call):
     logger.info("Adding call rework task: {item}".format(item=item))
     connection = create_monica_server_connection()
-    summary = f"Incoming call by '{item.contact}' at '{item.timestamp}'" if item.incoming else f"Outgoing call to '{item.contact}' at '{item.timestamp}'"
+    summary = (
+        f"Incoming call by '{item.contact}' at '{item.timestamp}'"
+        if item.incoming
+        else f"Outgoing call to '{item.contact}' at '{item.timestamp}'"
+    )
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     temp_dict = {
         "type": "call",
@@ -31,7 +40,14 @@ def add_call_rework_task(item: call):
         "timestamp": item.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         "incoming": item.incoming,
     }
-    description = "---\n" + json.dumps(temp_dict, indent=4, sort_keys=True) + "\n---\n\n" + item.message if item.message is not None else ""
+    description = (
+        "---\n"
+        + json.dumps(temp_dict, indent=4, sort_keys=True)
+        + "\n---\n\n"
+        + item.message
+        if item.message is not None
+        else ""
+    )
     try:
         with connection.cursor() as cursor:
             happened_at = item.timestamp.strftime("%Y-%m-%d")
@@ -40,7 +56,8 @@ def add_call_rework_task(item: call):
                     uuid4(),
                     DEFAULT_ACCOUNT_ID,
                     summary,
-                    description, happened_at,
+                    description,
+                    happened_at,
                     timestamp,
                     timestamp,
                 )
@@ -52,7 +69,9 @@ def add_call_rework_task(item: call):
             connection.commit()
             last_row_id = cursor.lastrowid
 
-            activity_contact_values = tuple((last_row_id, INBOX_CONTACT_ID, DEFAULT_ACCOUNT_ID))
+            activity_contact_values = tuple(
+                (last_row_id, INBOX_CONTACT_ID, DEFAULT_ACCOUNT_ID)
+            )
             cursor.execute(
                 "INSERT INTO activity_contact (activity_id, contact_id, account_id) VALUES (%s, %s, %s)",
                 activity_contact_values,

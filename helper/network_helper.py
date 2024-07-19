@@ -4,7 +4,7 @@ from platform import platform
 from fastapi import Request
 from loguru import logger
 
-DEBUG = (platform == "darwin" or platform == "win32" or platform == "Windows")
+DEBUG = platform == "darwin" or platform == "win32" or platform == "Windows"
 
 
 def get_url(service):

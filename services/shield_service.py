@@ -8,7 +8,12 @@ from helper.db_helper import create_server_connection, close_server_connection
 from models.db_models import app_usage, power
 
 logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__))
+        + "/logs/"
+        + os.path.basename(__file__)
+        + ".log"
+    ),
     format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     backtrace=True,
     diagnose=True,

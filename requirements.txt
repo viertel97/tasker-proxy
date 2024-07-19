@@ -2,6 +2,7 @@ fastapi==0.109.1
 google_api_python_client==2.65.0
 google_auth_oauthlib==0.4.2
 loguru==0.7.2
+numpy==1.24.3
 pandas==1.5.3
 PyMySQL==1.0.2
 python_dateutil==2.8.2
@@ -14,5 +15,3 @@ SpeechRecognition==3.8.1
 quarter_lib==0.0.22
 SQLAlchemy==2.0.17
 python-telegram-bot==20.0
-
-quarter_lib_old

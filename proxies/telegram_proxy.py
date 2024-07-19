@@ -21,5 +21,9 @@ async def send_message_to_telegram(message: str):
 
 def log_to_telegram(message: str, logger):
     logger.info(f"service: {title}, message: {message}")
-    Thread(target=post, args=(URL + "/log",), kwargs={'json': {"service": title, "message": message}}).start()
+    Thread(
+        target=post,
+        args=(URL + "/log",),
+        kwargs={"json": {"service": title, "message": message}},
+    ).start()
     return {"message": "Message sent to telegram"}

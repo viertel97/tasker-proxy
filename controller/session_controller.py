@@ -4,9 +4,11 @@ import re
 from fastapi import APIRouter, Request
 from quarter_lib.logging import setup_logging
 from quarter_lib_old.easy_voice_recorder import get_logs_from_recording
-from quarter_lib_old.file_helper import get_config
 
-from helper.web_helper import get_tasker_mapping_from_web, get_habit_tracker_mapping_from_web
+from helper.web_helper import (
+    get_tasker_mapping_from_web,
+    get_habit_tracker_mapping_from_web,
+)
 from models.db_models import meditation_session, new_book, reading_session, yoga_session
 from services.notion_service import (
     track_habit,
@@ -51,7 +53,6 @@ async def get_drink(request: Request):
     logger.info("service: " + str(ght_data))
 
 
-
 @logger.catch
 @router.post("/habit-tracker/sport/{service}")
 async def habit_tracker(service: str):
@@ -78,7 +79,7 @@ async def track_meditation(item: meditation_session):
 
 @logger.catch
 @router.post("/habit-tracker/yoga")
-async def track_meditation(item: yoga_session):
+async def track_yoga(item: yoga_session):
     await add_yoga_session(item)
     return {"message": "Yoga session added in the background"}
 
@@ -97,7 +98,7 @@ async def track_reading(item: reading_session):
 
 @logger.catch
 @router.post("/habit-tracker/new_book")
-async def track_reading(item: new_book):
+async def add_new_book(item: new_book):
     update_reading_page(item)
     await add_book_reminder(item)
     return {"message": "New book added in the background"}
@@ -107,7 +108,9 @@ async def track_reading(item: new_book):
 @router.post("/file/recording/{context}")
 async def create_file(request: Request, context: str):
     body = await request.body()
-    temp = str(body.decode("ISO-8859-1")).split("Content-Type: application/octet-stream")
+    temp = str(body.decode("ISO-8859-1")).split(
+        "Content-Type: application/octet-stream"
+    )
     test = temp[0].replace("--joaomgcdTaskerMOTHERFOCKERMUAHAHA\r\n", "")
     file_name = re.search(r"\"file_name\":\"(.*)\"", test).group(1).split("/")[-1]
     logger.info("file_name: " + file_name)

@@ -90,7 +90,16 @@ affinity:
       nodeSelectorTerms:
       - matchExpressions:
         - key: kubernetes.io/hostname
-          operator: NotIn
+          operator: In
           values:
-          - lenovo-server
+          - "raspberrypi5"
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: NotIn
+            values:
+            - "lenovo-server"
+
 

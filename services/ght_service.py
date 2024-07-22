@@ -1,30 +1,23 @@
+import json
 import os
 import re
+from datetime import datetime
 
 import pandas as pd
 import pandas.errors
 import pymysql
+from croniter import croniter
 from dateutil import parser
 from loguru import logger
-import json
+from quarter_lib.logging import setup_logging
 
 from helper.caching import ttl_cache
-from helper.db_helper import create_server_connection, close_server_connection
+from helper.db_helper import close_server_connection, create_server_connection
 from helper.web_helper import get_rework_events_from_web
 from services.google_service import get_events_for_rework
 from services.todoist_service import add_task
 
-logger.add(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__))
-        + "/logs/"
-        + os.path.basename(__file__)
-        + ".log"
-    ),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+logger = setup_logging(__file__)
 
 
 def parse_json(json_str):
@@ -35,6 +28,22 @@ def parse_json(json_str):
         return {}
 
 
+def is_cron_matching_today(cron_expression):
+    now = datetime.now()
+
+    # Create a croniter object with the current time as the base time
+    cron = croniter(cron_expression, now)
+
+    # Get the next and previous scheduled times
+    next_time = cron.get_next(datetime)
+    prev_time = cron.get_prev(datetime)
+
+    # Check if either the next or previous scheduled time is today
+    if now.date() == next_time.date() or now.date() == prev_time.date():
+        return True
+
+    return False
+
 def schema_matches(row, event):
     return (
         row["schema"] == "regex"
@@ -44,6 +53,8 @@ def schema_matches(row, event):
         or (row["schema"] == "not_contains" and row["pattern"] not in event)
         or (row["schema"] == "startswith" and event.startswith(row["pattern"]))
         or (row["schema"] == "endswith" and event.endswith(row["pattern"]))
+        # TODO: fix / add crontab
+        or (row["schema"] == "crontab" and is_cron_matching_today(row["pattern"]))
     )
 
 
@@ -51,7 +62,12 @@ def schema_matches(row, event):
 def get_ght_questions_from_database(type_of_question, connection=None):
     if connection is None:
         connection = create_server_connection()
-    df = pd.read_sql("SELECT * FROM ght_questions_" + type_of_question, connection)
+    if "/" in type_of_question:
+        type_of_question = type_of_question.split("/")
+        df = pd.read_sql(f"SELECT * FROM ght_questions_{type_of_question[0]} WHERE code = {type_of_question[1]}",
+            connection)
+    else:
+        df = pd.read_sql("SELECT * FROM ght_questions_" + type_of_question, connection)
     return df
 
 
@@ -116,7 +132,9 @@ def add_ght_entry(result_dict: dict):
     raw_connection = connection.raw_connection()
     for index, row in result_df.iterrows():
         if any(temp in row["value"] for temp in ["?", "!"]):
-            add_task(f"{timestamp}: {row['message']} (code: {row['code']}) -> value: {row['value']}")
+            add_task(
+                f"{timestamp}: {row['message']} (code: {row['code']}) -> value: {row['value']}"
+            )
         try:
             with raw_connection.cursor() as cursor:
                 values = tuple(

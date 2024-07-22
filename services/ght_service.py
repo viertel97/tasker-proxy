@@ -64,8 +64,8 @@ def get_ght_questions_from_database(type_of_question, connection=None):
         connection = create_server_connection()
     if "/" in type_of_question:
         type_of_question = type_of_question.split("/")
-        df = pd.read_sql(f"SELECT * FROM ght_questions_{type_of_question[0]} WHERE code = {type_of_question[1]}",
-            connection)
+        query = f'SELECT * FROM ght_questions_{type_of_question[0]} WHERE time_of_day = "{type_of_question[1]}"'
+        df = pd.read_sql(query, connection)
     else:
         df = pd.read_sql("SELECT * FROM ght_questions_" + type_of_question, connection)
     return df

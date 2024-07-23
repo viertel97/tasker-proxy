@@ -4,7 +4,7 @@ import pandas as pd
 from quarter_lib.logging import setup_logging
 from sqlalchemy import text
 
-from helper.db_helper import create_sqlalchemy_engine
+from helper.db_helper import create_server_connection
 
 logger = setup_logging(__name__)
 
@@ -17,7 +17,7 @@ def update_koreader_tables(file_path):
     )
     sqlite_connection.close()
 
-    engine = create_sqlalchemy_engine()
+    engine = create_server_connection()
     update_result_koreader_book = update_table_with_dataframe(
         "koreader_book", df_book, ["id"], engine
     )

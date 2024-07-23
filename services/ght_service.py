@@ -44,6 +44,7 @@ def is_cron_matching_today(cron_expression):
 
     return False
 
+
 def schema_matches(row, event):
     return (
         row["schema"] == "regex"

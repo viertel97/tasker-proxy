@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from quarter_lib.logging import setup_logging
+
 from models.db_models import app_usage, power
 from services.shield_service import add_app_usage, add_start_stop
 

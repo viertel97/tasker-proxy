@@ -1,21 +1,10 @@
-import os
-
 from fastapi import APIRouter, Request
-from loguru import logger
+from quarter_lib.logging import setup_logging
 
 from services.ght_service import add_ght_entry, add_wellbeing_entry, get_ght_questions
 
-logger.add(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__))
-        + "/logs/"
-        + os.path.basename(__file__)
-        + ".log"
-    ),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+logger = setup_logging(__file__)
+
 
 router = APIRouter()
 
@@ -34,11 +23,13 @@ async def ght_questions(service: str):
     result = get_ght_questions(service)
     return result
 
+
 @logger.catch
 @router.get("/ght/{service}/{type}")
 async def ght_questions(service: str, type: str):
     result = get_ght_questions(service + "/" + type)
     return result
+
 
 @logger.catch
 @router.post("/wellbeing")

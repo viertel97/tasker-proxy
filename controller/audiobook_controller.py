@@ -4,8 +4,7 @@ from datetime import datetime
 from json import dumps
 from typing import Annotated
 
-from fastapi import APIRouter
-from fastapi import UploadFile, Form
+from fastapi import APIRouter, Form, UploadFile
 from quarter_lib.logging import setup_logging
 
 from models.tasks import audiobook_finished, zotero_task

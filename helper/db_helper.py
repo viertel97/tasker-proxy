@@ -1,7 +1,8 @@
-from quarter_lib.akeyless import get_target
-from sqlalchemy import create_engine
 import urllib.parse
+
+from quarter_lib.akeyless import get_target
 from quarter_lib.logging import setup_logging
+from sqlalchemy import create_engine
 
 logger = setup_logging(__file__)
 

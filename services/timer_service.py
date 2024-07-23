@@ -1,7 +1,7 @@
 import pymysql.cursors
 from quarter_lib.logging import setup_logging
 
-from helper.db_helper import create_server_connection, close_server_connection
+from helper.db_helper import close_server_connection, create_server_connection
 from models.db_models import timer
 
 logger = setup_logging(__file__)

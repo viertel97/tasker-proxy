@@ -2,27 +2,26 @@ import traceback
 from pathlib import Path
 
 import uvicorn
-from fastapi import APIRouter, Depends, status
-from fastapi import FastAPI, Request
-from fastapi.exceptions import RequestValidationError, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, Request, status
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
 from quarter_lib.logging import setup_logging
 
-from config.api_documentation import tags_metadata, title, description
+from config.api_documentation import description, tags_metadata, title
 from controller import (
     audiobook_controller,
+    call_controller,
     drug_session_controller,
+    dynamic_notification_controller,
     ght_controller,
+    leaf_controller,
     session_controller,
     shield_controller,
-    timer_controller,
-    dynamic_notification_controller,
     smart_home_controller,
-    leaf_controller,
-    call_controller,
+    timer_controller,
     wol_controller,
 )
-from helper.network_helper import log_request_info, DEBUG
+from helper.network_helper import DEBUG, log_request_info
 from services.telegram_service import send_to_telegram
 
 controllers = [

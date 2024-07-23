@@ -5,9 +5,9 @@ from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 from quarter_lib_old.todoist import (
+    complete_task_by_title,
     move_item_to_project,
     update_due,
-    complete_task_by_title,
 )
 from todoist_api_python.api import TodoistAPI
 

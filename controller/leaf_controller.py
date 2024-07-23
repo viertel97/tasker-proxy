@@ -1,6 +1,6 @@
 import os
 
-from fastapi import APIRouter, Request, Body
+from fastapi import APIRouter, Body, Request
 from quarter_lib.logging import setup_logging
 from quarter_lib_old.todoist import complete_task_by_title
 

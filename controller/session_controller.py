@@ -6,8 +6,8 @@ from quarter_lib.logging import setup_logging
 from quarter_lib_old.easy_voice_recorder import get_logs_from_recording
 
 from helper.web_helper import (
-    get_tasker_mapping_from_web,
     get_habit_tracker_mapping_from_web,
+    get_tasker_mapping_from_web,
 )
 from models.db_models import meditation_session, new_book, reading_session, yoga_session
 from services.notion_service import (

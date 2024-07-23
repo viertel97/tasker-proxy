@@ -1,25 +1,16 @@
-import os
+import json
 from datetime import datetime
 from uuid import uuid4
-import json
+
 import pymysql
-from loguru import logger
+from quarter_lib.logging import setup_logging
 from quarter_lib_old.database import create_monica_server_connection
 
 from helper.db_helper import close_server_connection
 from models.call import call
 
-logger.add(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__))
-        + "/logs/"
-        + os.path.basename(__file__)
-        + ".log"
-    ),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+logger = setup_logging(__file__)
+
 
 DEFAULT_ACCOUNT_ID = 1
 INBOX_CONTACT_ID = 52

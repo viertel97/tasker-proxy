@@ -1,6 +1,6 @@
 import os
 
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from loguru import logger
 
 from services.google_service import get_events_for_rework

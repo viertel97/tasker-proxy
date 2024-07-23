@@ -96,6 +96,8 @@ def get_ght_questions(type_of_question):
         logger.error("No rotating mindmap question found")
     except pandas.errors.UndefinedVariableError:
         logger.error("No column 'rotating_mindmap' found")
+    except Exception as e:
+        logger.error("Error: {error}".format(error=e))
     # add/filter the questions based on the rotating mindmap question
     df = df[df["active"] == 1]
     df = df[["code", "message", "notation", "default_type"]]

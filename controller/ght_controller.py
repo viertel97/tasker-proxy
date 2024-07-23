@@ -25,13 +25,6 @@ async def ght_questions(service: str):
 
 
 @logger.catch
-@router.get("/ght/{service}/{type}")
-async def ght_questions(service: str, type: str):
-    result = get_ght_questions(service + "/" + type)
-    return result
-
-
-@logger.catch
 @router.post("/wellbeing")
 async def add_wellbeing(request: Request):
     wellbeing_data = await request.json()

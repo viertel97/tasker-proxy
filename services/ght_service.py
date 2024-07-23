@@ -1,5 +1,4 @@
 import json
-import os
 import re
 from datetime import datetime
 
@@ -11,7 +10,7 @@ from dateutil import parser
 from loguru import logger
 from quarter_lib.logging import setup_logging
 
-from helper.caching import ttl_cache
+from sqlalchemy import text
 from helper.db_helper import close_server_connection, create_server_connection
 from helper.web_helper import get_rework_events_from_web
 from services.google_service import get_events_for_rework
@@ -67,9 +66,9 @@ def get_ght_questions_from_database(type_of_question, connection=None):
         if "-" in type_of_question:
             type_of_question = type_of_question.split("-")
             query = f'SELECT * FROM ght_questions_{type_of_question[0]} WHERE time_of_day = "{type_of_question[1]}"'
-            df = pd.read_sql(query, conn)
         else:
-            df = pd.read_sql("SELECT * FROM ght_questions_" + type_of_question, conn)
+            query = f"SELECT * FROM ght_questions_{type_of_question}"
+        df = pd.read_sql(text(query), conn)
     return df
 
 

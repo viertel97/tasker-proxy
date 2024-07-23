@@ -7,8 +7,6 @@ from helper.network_helper import get_url
 
 URL = get_url("telegram-service")
 
-URL = "http://192.168.178.49:9300"
-
 
 async def send_file_to_telegram(caption: str, file):
     post(URL + "/file", json={"caption": caption}, files=file)

@@ -18,7 +18,7 @@ async def get_body(request: Request):
 
 
 @logger.catch
-@router.get("/ght/{service}")
+@router.get("/ght/{service:path}")
 async def ght_questions(service: str):
     result = get_ght_questions(service)
     return result

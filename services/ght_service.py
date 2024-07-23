@@ -13,7 +13,7 @@ from quarter_lib.logging import setup_logging
 from sqlalchemy import text
 from helper.db_helper import close_server_connection, create_server_connection
 from helper.web_helper import get_rework_events_from_web
-from services.google_service import get_events_for_rework
+from services.google_service import get_rework_events_from_google_calendar
 from services.todoist_service import add_task
 
 logger = setup_logging(__file__)
@@ -62,8 +62,8 @@ def get_ght_questions_from_database(type_of_question, connection=None):
     if connection is None:
         connection = create_server_connection()
     logger.info("Getting questions from database: " + type_of_question)
-    if "-" in type_of_question:
-        type_of_question = type_of_question.split("-")
+    if "/" in type_of_question:
+        type_of_question = type_of_question.split("/")
         query = f'SELECT * FROM ght_questions_{type_of_question[0]} WHERE time_of_day = "{type_of_question[1]}"'
     else:
         query = f"SELECT * FROM ght_questions_{type_of_question}"
@@ -82,8 +82,7 @@ def get_ght_questions(type_of_question):
     df = df.merge(
         exploded_rework_events, how="left", left_on="code", right_on="questions"
     )
-    events = get_events_for_rework()
-    events.append("TS")
+    events = get_rework_events_from_google_calendar()
     for index, row in df.query("questions.notnull()").iterrows():
         if row["pattern"] and row["schema"]:  # filter here the event based questions
             for event in events:
@@ -98,7 +97,6 @@ def get_ght_questions(type_of_question):
         logger.error("No column 'rotating_mindmap' found")
     except Exception as e:
         logger.error("Error: {error}".format(error=e))
-    # add/filter the questions based on the rotating mindmap question
     df = df[df["active"] == 1]
     df = df[["code", "message", "notation", "default_type"]]
 

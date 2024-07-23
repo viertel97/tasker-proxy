@@ -123,7 +123,7 @@ def get_date_or_datetime(event, key):
 
 
 @ttl_cache(ttl=60 * 5)
-def get_events_for_rework():
+def get_rework_events_from_google_calendar():
     yesterday = datetime.now() - timedelta(days=1.5)
     tomorrow = datetime.now() + timedelta(days=1.5)
     events = get_events_by_timespan(yesterday, tomorrow)

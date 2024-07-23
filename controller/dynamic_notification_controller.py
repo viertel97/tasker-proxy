@@ -3,7 +3,7 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from loguru import logger
 
-from services.google_service import get_events_for_rework
+from services.google_service import get_rework_events_from_google_calendar
 from services.todoist_service import get_rework_tasks
 
 logger.add(
@@ -33,7 +33,7 @@ def generate_html_list(list, title):
 @router.get("/tasker/notification")
 async def preparations():
     tasks = get_rework_tasks()
-    events = get_events_for_rework()
+    events = get_rework_events_from_google_calendar()
     return_str = "<h1>Nach- oder Vorarbeiten?</h1>"
     if tasks:
         return_str += generate_html_list(tasks, "Tasks")

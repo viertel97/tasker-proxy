@@ -62,8 +62,8 @@ def schema_matches(row, event):
 def get_ght_questions_from_database(type_of_question, connection=None):
     if connection is None:
         connection = create_server_connection()
-    if "/" in type_of_question:
-        type_of_question = type_of_question.split("/")
+    if "-" in type_of_question:
+        type_of_question = type_of_question.split("-")
         query = f'SELECT * FROM ght_questions_{type_of_question[0]} WHERE time_of_day = "{type_of_question[1]}"'
         df = pd.read_sql(query, connection)
     else:

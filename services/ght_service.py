@@ -62,18 +62,19 @@ def get_ght_questions_from_database(type_of_question, connection=None):
     if connection is None:
         connection = create_server_connection()
     logger.info("Getting questions from database: " + type_of_question)
-    with connection.connect() as conn:
-        if "-" in type_of_question:
-            type_of_question = type_of_question.split("-")
-            query = f'SELECT * FROM ght_questions_{type_of_question[0]} WHERE time_of_day = "{type_of_question[1]}"'
-        else:
-            query = f"SELECT * FROM ght_questions_{type_of_question}"
-        df = pd.read_sql(text(query), conn)
-    return df
+    if "-" in type_of_question:
+        type_of_question = type_of_question.split("-")
+        query = f'SELECT * FROM ght_questions_{type_of_question[0]} WHERE time_of_day = "{type_of_question[1]}"'
+    else:
+        query = f"SELECT * FROM ght_questions_{type_of_question}"
+    df = pd.DataFrame(connection.connect().execute(text(query)))
+    return df, connection
 
 
 def get_ght_questions(type_of_question):
-    df = get_ght_questions_from_database(type_of_question)
+    df, connection = get_ght_questions_from_database(type_of_question)
+    close_server_connection(connection)
+
     df.sort_values(by=["question_order"], inplace=True)
 
     rework_events = pd.DataFrame(get_rework_events_from_web())
@@ -124,7 +125,7 @@ def get_exercises(type):
 
 def add_ght_entry(result_dict: dict):
     connection = create_server_connection()
-    df = get_ght_questions_from_database(result_dict.pop("type"), connection)
+    df, connection = get_ght_questions_from_database(result_dict.pop("type"), connection)
     df = df.set_index("code")
     timestamp = parser.parse(result_dict.pop("timestamp"))
     error_count = 0

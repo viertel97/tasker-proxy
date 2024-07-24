@@ -6,7 +6,7 @@ from services.ght_service import add_ght_entry, add_wellbeing_entry, get_ght_que
 logger = setup_logging(__file__)
 
 
-router = APIRouter()
+router = APIRouter(tags=["ght"])
 
 
 @logger.catch
@@ -18,9 +18,16 @@ async def get_body(request: Request):
 
 
 @logger.catch
-@router.get("/ght/{service:path}")
-async def ght_questions(service: str):
+@router.get("/ght/{service}")
+async def ght_question_single(service: str):
     result = get_ght_questions(service)
+    return result
+
+
+@logger.catch
+@router.get("/ght/{service}/{type_of_question}")
+async def ght_question_both(service: str, type_of_question: str):
+    result = get_ght_questions(service + "/" + type_of_question)
     return result
 
 

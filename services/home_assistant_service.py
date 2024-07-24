@@ -1,5 +1,3 @@
-import os
-
 from quarter_lib.logging import setup_logging
 
 from services.todoist_service import add_task_with_check

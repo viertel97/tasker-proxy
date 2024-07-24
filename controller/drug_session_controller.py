@@ -1,5 +1,3 @@
-import os
-
 from fastapi import APIRouter
 from quarter_lib.logging import setup_logging
 

@@ -1,8 +1,9 @@
 import json
 import re
 from datetime import datetime
-
+import ast
 import pandas as pd
+from pandas import concat
 import pandas.errors
 import pymysql
 from croniter import croniter
@@ -10,6 +11,8 @@ from dateutil import parser
 from quarter_lib.logging import setup_logging
 
 from sqlalchemy import text
+
+from config.queries import ght_get_old_answers_query
 from helper.db_helper import close_server_connection, create_server_connection
 from helper.web_helper import get_rework_events_from_web
 from services.google_service import get_rework_events_from_google_calendar
@@ -67,12 +70,61 @@ def get_ght_questions_from_database(type_of_question, connection=None):
     return df, connection
 
 
+def get_unique_ght_answers():
+    connection = create_server_connection()
+    logger.info("Getting unique last answers from database")
+    df = pd.DataFrame(connection.connect().execute(text(ght_get_old_answers_query)))
+    close_server_connection(connection)
+    return df
+
+
 def get_ght_questions(type_of_question):
     df, connection = get_ght_questions_from_database(type_of_question)
     close_server_connection(connection)
 
-    df.sort_values(by=["question_order"], inplace=True)
+    df = handle_rework_events(df)
+    df = add_mindmap_question(df)
+    df = add_previous_answers_to_ght(df)
 
+    df.sort_values(by=["question_order"], inplace=True)
+    df = df[df["active"] == 1]
+    df = df[["code", "message", "notation", "default_type"]]
+
+    result = df.to_dict(orient="records")
+    return result
+
+
+def add_previous_answers_to_ght(df):
+    if "last_answers_to_show" in df.columns:
+        unique_ght_answers = get_unique_ght_answers()
+        for index, row in df.query("last_answers_to_show.notnull()").iterrows():
+            answer_list = ast.literal_eval(row["last_answers_to_show"])
+            for answer in answer_list:
+                latest_answer = unique_ght_answers.query(
+                    f'ght_code == "{answer}"'
+                ).iloc[0]
+                message = f'Answer at "{latest_answer["ts"]}+{latest_answer["offset"]}s" for question\n"{latest_answer["message"]}" (code: {answer}):\n\n"{latest_answer["value"]}"'
+                line = pd.DataFrame(
+                    {
+                        "code": "h4-" + answer,
+                        "default_type": "h4",
+                        "message": message,
+                        "value": latest_answer["value"],
+                        "ts": latest_answer["ts"],
+                        "offset": latest_answer["offset"],
+                        "active": 1,
+                        "question_order": row["question_order"] - 1,
+                        "notation": None,
+                    },
+                    index=[index],
+                )
+                df = concat([df.iloc[:index], line, df.iloc[index:]]).reset_index(
+                    drop=True
+                )
+    return df
+
+
+def handle_rework_events(df):
     rework_events = pd.DataFrame(get_rework_events_from_web())
     exploded_rework_events = rework_events.explode("questions")
     df = df.merge(
@@ -84,20 +136,23 @@ def get_ght_questions(type_of_question):
             for event in events:
                 if schema_matches(row, event):
                     df.at[index, "active"] = 1
-    try:
-        selected_mindmap_index = df.query("rotating_mindmap == True").sample(1).index[0]
-        df.at[selected_mindmap_index, "active"] = 1
-    except IndexError:
-        logger.error("No rotating mindmap question found")
-    except pandas.errors.UndefinedVariableError:
-        logger.error("No column 'rotating_mindmap' found")
-    except Exception as e:
-        logger.error("Error: {error}".format(error=e))
-    df = df[df["active"] == 1]
-    df = df[["code", "message", "notation", "default_type"]]
+    return df
 
-    result = df.to_dict(orient="records")
-    return result
+
+def add_mindmap_question(df):
+    if "rotating_mindmap" in df.columns:
+        try:
+            selected_mindmap_index = (
+                df.query("rotating_mindmap == True").sample(1).index[0]
+            )
+            df.at[selected_mindmap_index, "active"] = 1
+        except IndexError:
+            logger.error("No rotating mindmap question found")
+        except pandas.errors.UndefinedVariableError:
+            logger.error("No column 'rotating_mindmap' found")
+        except Exception as e:
+            logger.error("Error: {error}".format(error=e))
+    return df
 
 
 def get_exercises(type):
@@ -138,7 +193,7 @@ def add_ght_entry(result_dict: dict):
             with raw_connection.cursor() as cursor:
                 values = tuple(
                     (
-                        row["code"] + "~" + ght_type,
+                        row["code"],
                         row["value"],
                         timestamp,
                         timestamp.tzinfo.utcoffset(timestamp).seconds,

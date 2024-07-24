@@ -7,7 +7,6 @@ import pandas.errors
 import pymysql
 from croniter import croniter
 from dateutil import parser
-from loguru import logger
 from quarter_lib.logging import setup_logging
 
 from sqlalchemy import text
@@ -122,7 +121,8 @@ def get_exercises(type):
 
 def add_ght_entry(result_dict: dict):
     connection = create_server_connection()
-    df, connection = get_ght_questions_from_database(result_dict.pop("type"), connection)
+    ght_type = result_dict.pop("type")
+    df, connection = get_ght_questions_from_database(ght_type, connection)
     df = df.set_index("code")
     timestamp = parser.parse(result_dict.pop("timestamp"))
     error_count = 0
@@ -130,7 +130,7 @@ def add_ght_entry(result_dict: dict):
     result_df = result_df.merge(df, how="left", on="code")
     raw_connection = connection.raw_connection()
     for index, row in result_df.iterrows():
-        if any(temp in row["value"] for temp in ["?", "!"]):
+        if row["value"] is str and any(temp in row["value"] for temp in ["?", "!"]):
             add_task(
                 f"{timestamp}: {row['message']} (code: {row['code']}) -> value: {row['value']}"
             )
@@ -138,7 +138,7 @@ def add_ght_entry(result_dict: dict):
             with raw_connection.cursor() as cursor:
                 values = tuple(
                     (
-                        row["code"],
+                        row["code"] + "~" + ght_type,
                         row["value"],
                         timestamp,
                         timestamp.tzinfo.utcoffset(timestamp).seconds,

@@ -96,7 +96,6 @@ async def custom_exception_handler(request: Request, exc: Exception):
 
 
 if __name__ == "__main__":
-    print("lol")
     if DEBUG:
         uvicorn.run(
             f"{Path(__file__).stem}:app", host="0.0.0.0", reload=True, port=9000

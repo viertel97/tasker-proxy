@@ -46,18 +46,30 @@ def is_cron_matching_today(cron_expression):
     return False
 
 
-def schema_matches(row, event):
-    return (
-        row["schema"] == "regex"
-        and re.match(row["pattern"], event)
-        or (row["schema"] == "match" and event in row["pattern"])
-        or (row["schema"] == "contains" and row["pattern"] in event)
-        or (row["schema"] == "not_contains" and row["pattern"] not in event)
-        or (row["schema"] == "startswith" and event.startswith(row["pattern"]))
-        or (row["schema"] == "endswith" and event.endswith(row["pattern"]))
-        # TODO: fix / add crontab
-        or (row["schema"] == "crontab" and is_cron_matching_today(row["pattern"]))
-    )
+def schema_matches_event(row, event):
+    match row["schema"]:
+        case "regex":
+            return re.match(row["pattern"], event)
+        case "match":
+            return event == row["pattern"]
+        case "contains":
+            return row["pattern"] in event
+        case "not_contains":
+            return row["pattern"] not in event
+        case "startswith":
+            return event.startswith(row["pattern"])
+        case "endswith":
+            return event.endswith(row["pattern"])
+        case _:
+            return False
+
+
+def schema_matches_without_event(row):
+    match row["schema"]:
+        case "crontab":
+            return is_cron_matching_today(row["pattern"])
+        case _:
+            return False
 
 
 def get_ght_questions_from_database(type_of_question, connection=None):
@@ -130,12 +142,26 @@ def handle_rework_events(df):
     df = df.merge(
         exploded_rework_events, how="left", left_on="code", right_on="questions"
     )
-    events = get_rework_events_from_google_calendar()
+    events = get_rework_events_from_google_calendar(
+        time_threshold=1,
+        calendars=[
+            "Janik's Kalender",
+            "Drug-Kalender",
+            "Reisen",
+            "Veranstaltungen",
+            "Arbeit",
+        ],
+        skip_check= True,
+    )
     for index, row in df.query("questions.notnull()").iterrows():
-        if row["pattern"] and row["schema"]:  # filter here the event based questions
+        if row["pattern"] and row["schema"]:
+            if schema_matches_without_event(row):
+                df.at[index, "active"] = 1
+                continue
             for event in events:
-                if schema_matches(row, event):
+                if schema_matches_event(row, event):
                     df.at[index, "active"] = 1
+                    continue
     return df
 
 

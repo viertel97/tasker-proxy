@@ -1,31 +1,19 @@
 import time
-from functools import lru_cache, update_wrapper
-from math import floor
-from typing import Any, Callable
+from functools import lru_cache
 
 
-def ttl_cache(maxsize: int = 128, typed: bool = False, ttl: int = -1):
-    if ttl <= 0:
-        ttl = 65536
+def ttl_cache(ttl: int, maxsize: int = 128):
+    """
+    Time aware lru caching
+    """
 
-    hash_gen = _ttl_hash_gen(ttl)
-
-    def wrapper(func: Callable) -> Callable:
-        @lru_cache(maxsize, typed)
-        def ttl_func(ttl_hash, *args, **kwargs):
+    def wrapper(func):
+        @lru_cache(maxsize)
+        def inner(__ttl, *args, **kwargs):
+            # Note that __ttl is not passed down to func,
+            # as it's only used to trigger cache miss after some time
             return func(*args, **kwargs)
 
-        def wrapped(*args, **kwargs) -> Any:
-            th = next(hash_gen)
-            return ttl_func(th, *args, **kwargs)
-
-        return update_wrapper(wrapped, func)
+        return lambda *args, **kwargs: inner(time.time() // ttl, *args, **kwargs)
 
     return wrapper
-
-
-def _ttl_hash_gen(seconds: int):
-    start_time = time.time()
-
-    while True:
-        yield floor((time.time() - start_time) / seconds)

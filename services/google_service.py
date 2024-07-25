@@ -2,22 +2,10 @@ import os
 from datetime import datetime, timedelta
 
 from dateutil import parser
-from loguru import logger
 from quarter_lib_old.google import build_calendar_service, get_dict
+from quarter_lib.logging import setup_logging
 
-from helper.caching import ttl_cache
-
-logger.add(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__))
-        + "/logs/"
-        + os.path.basename(__file__)
-        + ".log"
-    ),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+logger = setup_logging(__file__)
 
 
 def get_events_from_calendar(
@@ -76,7 +64,9 @@ def get_events():
     return event_list
 
 
-def get_events_by_timespan(start, end):
+def get_events_by_timespan(start, end, calendars=None):
+    if calendars is None:
+        calendars = ["Janik's Kalender", "Drug-Kalender", "Reisen", "Veranstaltungen"]
     calendar_service = build_calendar_service()
 
     calendar_dict = get_dict(calendar_service)
@@ -88,28 +78,12 @@ def get_events_by_timespan(start, end):
         "timeMin": start.isoformat() + "Z",
         "timeMax": end.isoformat() + "Z",
     }
-
-    event_list.extend(
-        get_events_from_calendar(
-            "Janik's Kalender", calendar_dict, calendar_service, query_params
+    for calendar in calendars:
+        event_list.extend(
+            get_events_from_calendar(
+                calendar, calendar_dict, calendar_service, query_params
+            )
         )
-    )
-    event_list.extend(
-        get_events_from_calendar(
-            "Drug-Kalender", calendar_dict, calendar_service, query_params
-        )
-    )
-    event_list.extend(
-        get_events_from_calendar(
-            "Reisen", calendar_dict, calendar_service, query_params
-        )
-    )
-    event_list.extend(
-        get_events_from_calendar(
-            "Veranstaltungen", calendar_dict, calendar_service, query_params
-        )
-    )
-
     return event_list
 
 
@@ -122,17 +96,16 @@ def get_date_or_datetime(event, key):
     return parser.parse(date_or_datetime).replace(tzinfo=None)
 
 
-@ttl_cache(ttl=60 * 5)
-def get_rework_events_from_google_calendar():
-    yesterday = datetime.now() - timedelta(days=1.5)
-    tomorrow = datetime.now() + timedelta(days=1.5)
-    events = get_events_by_timespan(yesterday, tomorrow)
+def get_rework_events_from_google_calendar(time_threshold=1.5, calendars=None, skip_check = False):
+    yesterday = datetime.now() - timedelta(days=time_threshold)
+    tomorrow = datetime.now() + timedelta(days=time_threshold)
+    events = get_events_by_timespan(yesterday, tomorrow, calendars)
     events = [event for event in events if event["status"] != "cancelled"]
     result = []
 
     for event in events:
         start = get_date_or_datetime(event, "start")
-        if yesterday <= start <= tomorrow:
+        if skip_check or (yesterday <= start <= tomorrow):
             result.append(
                 "{summary}({start})".format(
                     summary=event["summary"], start=start.strftime("%d.%m.%Y %H:%M")

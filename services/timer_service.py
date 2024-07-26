@@ -9,8 +9,9 @@ logger = setup_logging(__file__)
 
 def add_timer(item: timer):
     connection = create_server_connection()
+    raw_connection = connection.raw_connection()
     try:
-        with connection.cursor() as cursor:
+        with raw_connection.cursor() as cursor:
             values = tuple(
                 (
                     item.context,
@@ -24,7 +25,7 @@ def add_timer(item: timer):
                 "INSERT INTO timer (context, start, start_offset, end, end_offset) VALUES (%s, %s, %s, %s, %s)",
                 values,
             )
-            connection.commit()
+            raw_connection.commit()
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
     except Exception as e:

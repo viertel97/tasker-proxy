@@ -28,15 +28,16 @@ def generate_insert(keys):
 def add_drug_session(item: drug_session):
     item_dict = {k: v for k, v in item.dict().items() if v}
     connection = create_server_connection()
+    raw_connection = connection.raw_connection()
     try:
-        with connection.cursor() as cursor:
+        with raw_connection.cursor() as cursor:
             values = tuple(item_dict.values())
             sql = generate_insert(item_dict.keys())
             cursor.execute(
                 sql,
                 values,
             )
-            connection.commit()
+            raw_connection.commit()
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
     close_server_connection(connection)

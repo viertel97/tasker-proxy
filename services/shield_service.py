@@ -22,13 +22,14 @@ logger.add(
 
 def add_start_stop(item: power):
     connection = create_server_connection()
+    raw_connection = connection.raw_connection()
     try:
-        with connection.cursor() as cursor:
+        with raw_connection.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO `startup-shutdown-shield` (type) values (%s)",
                 item.type,
             )
-            connection.commit()
+            raw_connection.commit()
             logger.info("Inserted shield " + item.type)
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
@@ -40,8 +41,9 @@ def add_start_stop(item: power):
 
 def add_app_usage(item: app_usage):
     connection = create_server_connection()
+    raw_connection = connection.raw_connection()
     try:
-        with connection.cursor() as cursor:
+        with raw_connection.cursor() as cursor:
             values = tuple(
                 (
                     item.app,
@@ -55,7 +57,7 @@ def add_app_usage(item: app_usage):
                 "INSERT INTO shield_app_usage (app, start, start_offset, end, end_offset) VALUES (%s, %s, %s, %s, %s)",
                 values,
             )
-            connection.commit()
+            raw_connection.commit()
     except pymysql.err.IntegrityError as e:
         logger.error("IntegrityError: {error}".format(error=e))
     add_event_to_calendar(item.app, item.start, item.end)

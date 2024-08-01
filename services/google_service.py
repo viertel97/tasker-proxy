@@ -107,7 +107,7 @@ def get_rework_events_from_google_calendar(time_threshold=1.5, calendars=None, s
         start = get_date_or_datetime(event, "start")
         if skip_check or (yesterday <= start <= tomorrow):
             result.append(
-                "{summary}({start})".format(
+                "{summary} ({start})".format(
                     summary=event["summary"], start=start.strftime("%d.%m.%Y %H:%M")
                 )
             )

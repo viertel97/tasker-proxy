@@ -1,15 +1,15 @@
+import ast
 import json
 import re
 from datetime import datetime
-import ast
+
 import pandas as pd
-from pandas import concat
 import pandas.errors
 import pymysql
 from croniter import croniter
 from dateutil import parser
+from pandas import concat
 from quarter_lib.logging import setup_logging
-
 from sqlalchemy import text
 
 from config.queries import ght_get_old_answers_query
@@ -109,7 +109,8 @@ def get_ght_questions(type_of_question):
 def add_previous_answers_to_ght(df):
     if "last_answers_to_show" in df.columns:
         unique_ght_answers = get_unique_ght_answers()
-        for index, row in df.query("last_answers_to_show.notnull()").iterrows():
+        # and check if active is 1
+        for index, row in df.query("last_answers_to_show.notnull() and active == 1").iterrows():
             answer_list = ast.literal_eval(row["last_answers_to_show"])
             for answer in answer_list:
                 latest_answer = unique_ght_answers.query(
@@ -151,8 +152,10 @@ def handle_rework_events(df):
             "Veranstaltungen",
             "Arbeit",
         ],
-        skip_check= True,
+        skip_check=True,
     )
+    logger.info("Found relevant events for rework questions: " + str(events
+                                                                     ))
     for index, row in df.query("questions.notnull()").iterrows():
         if row["pattern"] and row["schema"]:
             if schema_matches_without_event(row):
@@ -211,9 +214,9 @@ def add_ght_entry(result_dict: dict):
     result_df = result_df.merge(df, how="left", on="code")
     raw_connection = connection.raw_connection()
     for index, row in result_df.iterrows():
-        if row["value"] is str and any(temp in row["value"] for temp in ["?", "!"]):
+        if "!" in row["value"] or "?" in row["value"]:
             add_task(
-                f"{timestamp}: {row['message']} (code: {row['code']}) -> value: {row['value']}"
+                f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'"
             )
         try:
             with raw_connection.cursor() as cursor:
@@ -237,6 +240,8 @@ def add_ght_entry(result_dict: dict):
             continue
 
     close_server_connection(connection)
+
+    # check if any
     return error_count
 
 

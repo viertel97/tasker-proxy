@@ -214,7 +214,7 @@ def add_ght_entry(result_dict: dict):
     result_df = result_df.merge(df, how="left", on="code")
     raw_connection = connection.raw_connection()
     for index, row in result_df.iterrows():
-        if "!" in row["value"] or "?" in row["value"]:
+        if isinstance(row["value"], str) and ("!" in row["value"] or "?" in row["value"]):
             add_task(
                 f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'"
             )

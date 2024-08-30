@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from quarter_lib.logging import setup_logging
 from services.splitwise_service import add_placeholder_to_splitwise
 from services.telegram_service import send_to_telegram
+from pydantic import BaseModel
 
 
 logger = setup_logging(__name__)
@@ -10,7 +11,7 @@ router = APIRouter(prefix="/splitwise", tags=["splitwise"])
 
 
 
-class AddExpenseItem:
+class AddExpenseItem(BaseModel):
     description: str
 
 @logger.catch

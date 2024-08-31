@@ -20,4 +20,6 @@ async def add_splitwise_entry(item: AddExpenseItem):
     result = add_placeholder_to_splitwise(item.description)
     if result.status_code != 200:
         await send_to_telegram("Error adding new splitwise entry: " + item.description)
+    else:
+        await send_to_telegram("Successfully added new splitwise entry: " + item.description)
     return result.json()

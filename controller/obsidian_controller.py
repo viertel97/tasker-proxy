@@ -34,26 +34,20 @@ def get_activities(happened_at):
 
 
 def prepare_result(result: pd.DataFrame):
-    result = result.to_dict(orient="records")
-    if len(result) == 0:
-        return "No activities found for the given date."
-    final_result = ""
-    for r in result:
-        final_result += f"{r['summary']}\n"
-        people = r["people"].split("~")
-        final_result += "# People:\n"
-        for p in people:
-            final_result += f" - [[{p}]]\n"
-        final_result += "---\n"
-        final_result += "people: [\n"
-        for p in people:
-            if p == people[-1]:
-                final_result += f'"[[{p}]]"\n'
-            else:
-                final_result += f'"[[{p}]]",\n'
-        final_result += "]\n"
-
-        final_result += "---\n"
+    final_result = []
+    for index, row in result.iterrows():
+        people_list = row["people"].split("~").sort()
+        people_content = ""
+        for p in people_list:
+            people_content += f"- [[{p}]]\n"
+        final_result.append(
+            {
+                "summary": row["summary"],
+                "people_frontmatter": [f"[[{p}]]" for p in people_list],
+                "people_content": people_content,
+            }
+        )
+    print(final_result)
     return final_result
 
 

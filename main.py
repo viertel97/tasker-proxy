@@ -20,6 +20,7 @@ from controller import (
     smart_home_controller,
     timer_controller,
     wol_controller,
+    obsidian_controller,
 )
 from helper.network_helper import DEBUG, log_request_info
 from services.telegram_service import send_to_telegram
@@ -34,6 +35,7 @@ controllers = [
     dynamic_notification_controller,
     smart_home_controller,
     leaf_controller,
+    obsidian_controller,
     call_controller,
     wol_controller,
 ]

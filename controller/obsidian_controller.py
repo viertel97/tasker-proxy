@@ -28,7 +28,7 @@ def get_activities(happened_at):
     connection = create_monica_server_connection()
     query = activity_query.format(happened_at=happened_at.strftime("%Y-%m-%d"))
     activities = pd.read_sql(query, connection)
-    activities = activities[["summary", "people"]]
+    activities = activities[["summary", "people", "description", "uuid"]]
     connection.close()
     return activities
 
@@ -42,11 +42,16 @@ def prepare_result(result: pd.DataFrame):
         if len(people_list) == 0:
             logger.info(f"Skipping row: {str(row['summary'])}")
             continue
+        # check if "description" contains two times "---" and if yes, use only the part after the second "---"
+        if row["description"].count("---") == 2:
+            row["description"] = row["description"].split("---")[2]
         final_result.append(
             {
                 "summary": row["summary"],
                 "people_frontmatter": [f"[[{p}]]" for p in people_list],
                 "people_content": [f"- [[{p}]]" for p in people_list],
+                "description": row["description"],
+                "uuid": row["uuid"],
             }
         )
     logger.info(final_result)

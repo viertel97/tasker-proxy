@@ -16,3 +16,11 @@ async def add_washer_finished_task():
         "Wäsche abhängen", due="in 2 days", project_id="2244725398"
     )
     logger.info(task)
+
+async def add_dishwasher_finished_task():
+    task = await add_task_with_check(
+        "Spülmaschine leeren",
+        due="in 0 minute",
+        project_id="2244725398",
+    )
+    logger.info(task)

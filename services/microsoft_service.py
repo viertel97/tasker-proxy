@@ -1,3 +1,6 @@
+import re
+
+import markdown
 import msal
 import requests
 from quarter_lib.akeyless import get_secrets
@@ -99,17 +102,23 @@ def add_formatted_text_to_page(page_id, text, title, access_token):
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json'
     }
+    text = re.sub(r'```.*?```', '', text, flags=re.DOTALL).strip()
+    text = markdown.markdown(text)  # Uncomment this line if text uses Markdown formatting
+    formatted_text = text.replace('\n', '<br>')
+
+    content = f'''
+    <div>
+        <p style="font-size:72px;color:black;">{formatted_text}</p>
+    </div>
+    '''
 
     payload = {
         'target': 'body',
         'action': 'append',
         'position': 'before',
-        'content': f'''
-        <div>
-            <p style="font-size:72px;color:black;">{text}</p>
-        </div>
-        '''
+        'content': content
     }
+
     another_payload = {
         'target': 'title',
         'action': 'replace',

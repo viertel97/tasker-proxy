@@ -98,7 +98,7 @@ def retry_get_new_page_id(duplicate_response, access_token, max_retries=10, back
 
 def handle_block_link(note_content, block_id):
     mk = markdown.markdown(note_content)
-    result = BeautifulSoup(mk).find_all(string=re.compile(block_id))
+    result = BeautifulSoup(mk, features="html.parser").find_all(string=re.compile(block_id))
     return result[0] if result else None
 
 

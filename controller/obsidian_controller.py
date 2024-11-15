@@ -1,7 +1,10 @@
 import json
+import re
 import time
 
+import markdown
 import pandas as pd
+from bs4 import BeautifulSoup
 from dateutil.parser import parse
 from fastapi import APIRouter
 from fastapi import Request, status
@@ -93,10 +96,47 @@ def retry_get_new_page_id(duplicate_response, access_token, max_retries=10, back
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def handle_block_link(note_content, block_id):
+    mk = markdown.markdown(note_content)
+    result = BeautifulSoup(mk).find_all(string=re.compile(block_id))
+    return result[0] if result else None
+
+
+def handle_whole_note(note_content):
+    return note_content
+
+
+def handle_heading_link(note_content, heading):
+    heading_pattern = re.compile(rf'(^|\n)#+\s*{re.escape(heading)}\s*(.*?)(?=\n#+\s|\Z)', re.DOTALL)
+    match = heading_pattern.search(note_content)
+    return match.group(2) if match else None
+
+
+def resolve_links(body_data):
+    for key in body_data['links'].keys():
+        note_content = body_data['links'][key]
+        if re.match(r'!\[\[.*#\^.*\]\]', key):  # block link
+            block_id = re.search(r'#\^(\w+)\]\]', key).group(1)
+            result = handle_block_link(note_content, block_id)
+        elif re.match(r'!\[\[.*#.*\]\]', key):  # heading link
+            heading = re.search(r'#(.*?)\]\]', key).group(1)
+            result = handle_heading_link(note_content, heading)
+        elif re.match(r'!\[\[.*\]\]', key):  # whole note
+            result = handle_whole_note(note_content)
+        else:
+            result = None
+        result = result.strip() if result else None
+        result = f"{key}:\n*{result}\n*" if result else None
+
+        body_data['content'] = body_data['content'].replace(key, result) if result else body_data['content']
+    return body_data
+
+
 @router.post("/to_onenote")
 async def send_to_onenote(request: Request):
     raw_body = await request.body()
     body_data = json.loads(raw_body.decode("utf-8"))
+    body_data = resolve_links(body_data)
     happened_at = parse(body_data["happened_at"])
 
     onenote_ids = get_onenote_default_ids()

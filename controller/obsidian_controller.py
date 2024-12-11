@@ -98,7 +98,14 @@ def retry_get_new_page_id(duplicate_response, access_token, max_retries=10, back
 
 def handle_block_link(note_content, block_id):
     mk = markdown.markdown(note_content)
-    result = BeautifulSoup(mk, features="html.parser").find_all(string=re.compile(block_id))
+    soup = BeautifulSoup(mk, features="html.parser")
+    result = soup.find_all(string=re.compile(block_id))
+    if len(block_id) + 1 == len(result[0]):
+        logger.info(f"Block id: {block_id} was found, but is too short")
+        for listItem in soup.find_all():
+            if listItem.decode_contents(formatter="html").find(block_id) != -1:
+                logger.info("Found block id and returning previous elements text")
+                return listItem.find_previous().text
     return result[0] if result else None
 
 
@@ -107,9 +114,33 @@ def handle_whole_note(note_content):
 
 
 def handle_heading_link(note_content, heading):
-    heading_pattern = re.compile(rf'(^|\n)#+\s*{re.escape(heading)}\s*(.*?)(?=\n#+\s|\Z)', re.DOTALL)
-    match = heading_pattern.search(note_content)
-    return match.group(2) if match else None
+    # Convert Markdown to HTML
+    mk = markdown.markdown(note_content)
+    # Parse the HTML with BeautifulSoup
+    soup = BeautifulSoup(mk, features="html.parser")
+
+    # Find the target heading by its text content
+    target_heading = soup.find(lambda tag: tag.name and tag.name.startswith('h') and tag.text == heading)
+    if not target_heading:
+        return []  # Heading not found, return empty list
+
+    # Determine the level of the target heading (e.g., h1 -> level 1)
+    target_level = int(target_heading.name[1:])
+
+    # Collect all elements under this heading
+    elements = []
+    for sibling in target_heading.find_all_next():
+        # Check if sibling is a heading
+        if sibling.name and sibling.name.startswith('h') and sibling.name not in ['hr', 'html']:
+            sibling_level = int(sibling.name[1:])
+            # Stop if we encounter a heading of the same or higher level
+            if sibling_level <= target_level:
+                break
+        if sibling.get_text() not in elements:
+            elements.append(sibling.get_text())
+
+    # Extract the text or HTML content of the elements
+    return "\n".join([el for el in elements])
 
 
 def resolve_links(body_data):
@@ -136,6 +167,10 @@ def resolve_links(body_data):
 async def send_to_onenote(request: Request):
     raw_body = await request.body()
     body_data = json.loads(raw_body.decode("utf-8"))
+    # write to json
+    with open(r'E:\Code\tasker-proxy\data.json', 'w') as f:
+        json.dump(body_data, f)
+        return JSONResponse(content={"status": "success"}, status_code=status.HTTP_200_OK)
     body_data = resolve_links(body_data)
     happened_at = parse(body_data["happened_at"])
 

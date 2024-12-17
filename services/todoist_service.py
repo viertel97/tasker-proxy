@@ -25,24 +25,24 @@ logger = setup_logging(__name__)
 
 async def add_book_finished_task(item: reading_session):
     task = TODOIST_API.add_task(
-        "'{other}' in Zotero & Obsidian einpflegen".format(other=item.title),
+        "'{other}' in Zotero & Obsidian einpflegen".format(other=item.title), label=["Digital"]
     )
     move_item_to_project(task.id, "2244725398")
     update_due(task.id, due={"string": "Tomorrow"})
 
     if type(item) is reading_session:
         task = TODOIST_API.add_task(
-            "eBook Reader updaten",
+            "eBook Reader updaten", label=["Digital"]
         )
     else:
         task = TODOIST_API.add_task(
-            "Hörbücher updaten + in einzelne Kapitel aufteilen + PDF runterladen",
+            "Hörbücher updaten + in einzelne Kapitel aufteilen + PDF runterladen", label=["Digital"]
         )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
 
     task = TODOIST_API.add_task(
-        "Aus Obsidian-Datei für '{other}' Tasks generieren".format(other=item.title),
+        "Aus Obsidian-Datei für '{other}' Tasks generieren".format(other=item.title), label=["Digital"]
     )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
@@ -51,19 +51,23 @@ async def add_book_finished_task(item: reading_session):
         "Vorherige Obsidian-Notizen aus dem Buch '{other}' in 10 Takeaways überführen + Impressionen, Zitate und Bonus einpflegen".format(
             other=item.title
         ),
+        label=["Digital"],
     )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
 
 
-async def add_task_with_check(title, due=None, project_id=None):
+async def add_task_with_check(title, due=None, project_id=None, label=None):
     tasks = TODOIST_API.get_tasks(project_id=project_id)
     if len(tasks) > 0:
         found_tasks = [task for task in tasks if task.content == title]
         if len(found_tasks) > 0:
             for task in found_tasks:
                 TODOIST_API.delete_task(task.id)
-    task = TODOIST_API.add_task(title)
+    if label:
+        task = TODOIST_API.add_task(title, label=[label])
+    else:
+        task = TODOIST_API.add_task(title)
     if project_id:
         move_item_to_project(task.id, project_id)
     if due:
@@ -71,8 +75,11 @@ async def add_task_with_check(title, due=None, project_id=None):
     return task
 
 
-def add_task(title: str, due=None, project_id=None):
-    task = TODOIST_API.add_task(title)
+def add_task(title: str, due=None, project_id=None, label=None):
+    if label:
+        task = TODOIST_API.add_task(title, label=[label])
+    else:
+        task = TODOIST_API.add_task(title)
     if project_id:
         move_item_to_project(task.id, project_id)
     if due:
@@ -115,7 +122,7 @@ async def add_zotero_task(item: zotero_task):
         "string": "tomorrow",
         "timezone": None,
     }
-    item = TODOIST_API.add_task(message)
+    item = TODOIST_API.add_task(message, label=["Digital"])
     move_item_to_project(item.id, "2281154095")
     update_due(item.id, due=due, add_reminder=True)
 

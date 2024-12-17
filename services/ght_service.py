@@ -204,20 +204,19 @@ def get_exercises(type):
 
 
 def add_ght_entry(result_dict: dict):
-    success_count = 0
+    success_count, error_count = 0, 0
     connection = create_server_connection()
     ght_type = result_dict.pop("type")
     df, connection = get_ght_questions_from_database(ght_type, connection)
     df = df.set_index("code")
     timestamp = parser.parse(result_dict.pop("timestamp"))
-    error_count = 0
     result_df = pd.DataFrame(result_dict.items(), columns=["code", "value"])
     result_df = result_df.merge(df, how="left", on="code")
     raw_connection = connection.raw_connection()
     for index, row in result_df.iterrows():
         if isinstance(row["value"], str) and ("!" in row["value"] or "?" in row["value"]):
             add_task(
-                f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'"
+                f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", label=["Digital"]
             )
         try:
             with raw_connection.cursor() as cursor:
@@ -242,7 +241,7 @@ def add_ght_entry(result_dict: dict):
             continue
 
     close_server_connection(connection)
-    return error_count, successfull_count
+    return error_count, success_count
 
 
 def add_wellbeing_entry(item: dict):

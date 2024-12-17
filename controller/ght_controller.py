@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from quarter_lib.logging import setup_logging
 
+from proxies.telegram_proxy import log_to_telegram
 from services.ght_service import add_ght_entry, add_wellbeing_entry, get_ght_questions
 
 logger = setup_logging(__file__)
@@ -14,7 +15,11 @@ router = APIRouter(tags=["ght"])
 async def get_body(request: Request):
     ght_data = await request.json()
     logger.info("service: " + str(ght_data))
-    add_ght_entry(ght_data)
+    error_count, success_count = add_ght_entry(ght_data)
+    log_to_telegram(
+        f"Added {success_count} entries to GHT and {error_count} entries failed", logger
+    )
+    return {"error_count": error_count, "success_count": success_count}
 
 
 @logger.catch

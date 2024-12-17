@@ -204,6 +204,7 @@ def get_exercises(type):
 
 
 def add_ght_entry(result_dict: dict):
+    success_count = 0
     connection = create_server_connection()
     ght_type = result_dict.pop("type")
     df, connection = get_ght_questions_from_database(ght_type, connection)
@@ -234,15 +235,14 @@ def add_ght_entry(result_dict: dict):
                     values,
                 )
                 raw_connection.commit()
+                success_count += 1
         except pymysql.err.IntegrityError as e:
             logger.error("IntegrityError: {error}".format(error=e))
             error_count += 1
             continue
 
     close_server_connection(connection)
-
-    # check if any
-    return error_count
+    return error_count, successfull_count
 
 
 def add_wellbeing_entry(item: dict):

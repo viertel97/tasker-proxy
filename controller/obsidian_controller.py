@@ -159,6 +159,7 @@ def resolve_links(body_data):
         result = result.strip() if result else None
         result = f"{key}:\n*{result}\n*" if result else None
 
+
         body_data['content'] = body_data['content'].replace(key, result) if result else body_data['content']
     return body_data
 
@@ -166,12 +167,8 @@ def resolve_links(body_data):
 @router.post("/to_onenote")
 async def send_to_onenote(request: Request):
     raw_body = await request.body()
-    body_data = json.loads(raw_body.decode("utf-8"))
-    # write to json
-    with open(r'E:\Code\tasker-proxy\data.json', 'w') as f:
-        json.dump(body_data, f)
-        return JSONResponse(content={"status": "success"}, status_code=status.HTTP_200_OK)
-    body_data = resolve_links(body_data)
+    body_json = json.loads(raw_body.decode("utf-8"))
+    body_data = resolve_links(body_json)
     happened_at = parse(body_data["happened_at"])
 
     onenote_ids = get_onenote_default_ids()

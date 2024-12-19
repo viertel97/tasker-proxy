@@ -216,7 +216,7 @@ def add_ght_entry(result_dict: dict):
     for index, row in result_df.iterrows():
         if isinstance(row["value"], str) and ("!" in row["value"] or "?" in row["value"]):
             add_task(
-                f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", label=["Digital"]
+                f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", labels=["Digital"]
             )
         try:
             with raw_connection.cursor() as cursor:

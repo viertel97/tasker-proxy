@@ -15,9 +15,10 @@ router = APIRouter(tags=["ght"])
 async def get_body(request: Request):
     ght_data = await request.json()
     logger.info("service: " + str(ght_data))
-    error_count, success_count = add_ght_entry(ght_data)
+    error_count, success_count, task_count = add_ght_entry(ght_data)
     log_to_telegram(
-        f"Added {success_count} entries to GHT and {error_count} entries failed", logger
+        f"Added {success_count} entries to GHT and created {task_count} tasks. {error_count} errors occurred.",
+        logger,
     )
     return {"error_count": error_count, "success_count": success_count}
 

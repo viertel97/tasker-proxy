@@ -204,7 +204,7 @@ def get_exercises(type):
 
 
 def add_ght_entry(result_dict: dict):
-    success_count, error_count = 0, 0
+    success_count, error_count, task_count = 0, 0, 0
     connection = create_server_connection()
     ght_type = result_dict.pop("type")
     df, connection = get_ght_questions_from_database(ght_type, connection)
@@ -218,6 +218,7 @@ def add_ght_entry(result_dict: dict):
             add_task(
                 f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", label=["Digital"]
             )
+            task_count += 1
         try:
             with raw_connection.cursor() as cursor:
                 values = tuple(
@@ -241,7 +242,7 @@ def add_ght_entry(result_dict: dict):
             continue
 
     close_server_connection(connection)
-    return error_count, success_count
+    return error_count, success_count, task_count
 
 
 def add_wellbeing_entry(item: dict):

@@ -101,6 +101,12 @@ async def complete_task(selected_service):
     complete_task_by_title(selected_service)
     await send_to_telegram("Task completed: " + selected_service)
 
+async def add_guided_meditation_task(guided_meditation_name):
+    item = TODOIST_API.add_task(
+        "Guided Meditation: {name}".format(name=guided_meditation_name), labels=["Meditation"]
+    )
+    move_item_to_project(item.id, "2244725398")
+    update_due(item.id, due={"string": "Tomorrow"})
 
 async def add_zotero_task(item: zotero_task):
     bookmark_timestamp = timedelta(seconds=(int(item.ms_of_bookmark_timestamp / 1000)))

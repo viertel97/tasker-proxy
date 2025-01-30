@@ -25,6 +25,7 @@ class Exercise(DefaultModel):
 
 class meditation_session(Exercise):
     selected_duration: int
+    guided_name: Optional[str] = None
 
 
 class yoga_session(Exercise):

@@ -103,7 +103,7 @@ async def complete_task(selected_service):
 
 async def add_guided_meditation_task(guided_meditation_name):
     item = TODOIST_API.add_task(
-        "Guided Meditation: {name}".format(name=guided_meditation_name), labels=["Meditation"]
+        "Guided Meditation '{name}' nacharbeiten".format(name=guided_meditation_name), labels=["Digital"]
     )
     move_item_to_project(item.id, "2244725398")
     update_due(item.id, due={"string": "Tomorrow"})

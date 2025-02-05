@@ -48,11 +48,7 @@ async def add_book_finished_task(item: reading_session):
     move_item_to_project(task.id, "2244725398")
 
     task = TODOIST_API.add_task(
-        "Vorherige Obsidian-Notizen aus dem Buch '{other}' in 10 Takeaways überführen + Impressionen, Zitate und Bonus einpflegen".format(
-            other=item.title
-        ),
-        labels=["Digital"],
-    )
+        f"Analyse über '{item.title}' zu Cubox hinzufügen und geg. lesen", labels=["Digital"])
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
 

@@ -24,7 +24,7 @@ from services.telegram_service import send_to_telegram
 from services.todoist_service import (
     add_book_finished_task,
     add_book_reminder,
-    complete_task,
+    complete_task, add_guided_meditation_task,
 )
 
 logger = setup_logging(__name__)
@@ -72,9 +72,13 @@ async def track_meditation(item: meditation_session):
     if not error_flag:
         selected_service = proxy_mapping_dict["meditation-evening"]
         await complete_task(selected_service)
+        if item.type == "Guided" and (item.guided_name is not None or item.guided_name != ""):
+            await add_guided_meditation_task(item.guided_name)
         return {"message": "Task completed in background"}
     else:
         return {"message": "Error"}
+
+
 
 
 @logger.catch

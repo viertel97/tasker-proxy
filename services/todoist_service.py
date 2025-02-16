@@ -48,11 +48,7 @@ async def add_book_finished_task(item: reading_session):
     move_item_to_project(task.id, "2244725398")
 
     task = TODOIST_API.add_task(
-        "Vorherige Obsidian-Notizen aus dem Buch '{other}' in 10 Takeaways überführen + Impressionen, Zitate und Bonus einpflegen".format(
-            other=item.title
-        ),
-        labels=["Digital"],
-    )
+        f"Analyse über '{item.title}' zu Cubox hinzufügen und geg. lesen", labels=["Digital"])
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
 
@@ -101,6 +97,12 @@ async def complete_task(selected_service):
     complete_task_by_title(selected_service)
     await send_to_telegram("Task completed: " + selected_service)
 
+async def add_guided_meditation_task(guided_meditation_name):
+    item = TODOIST_API.add_task(
+        "Guided Meditation '{name}' nacharbeiten".format(name=guided_meditation_name), labels=["Digital"]
+    )
+    move_item_to_project(item.id, "2244725398")
+    update_due(item.id, due={"string": "Tomorrow"})
 
 async def add_zotero_task(item: zotero_task):
     bookmark_timestamp = timedelta(seconds=(int(item.ms_of_bookmark_timestamp / 1000)))

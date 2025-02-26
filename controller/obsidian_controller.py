@@ -15,6 +15,7 @@ from quarter_lib_old.database import create_monica_server_connection
 
 from config.queries import activity_query
 from helper.web_helper import get_onenote_default_ids
+from services.html_service import parse_embeds_to_markdown
 from services.microsoft_service import duplicate_page, get_new_page_id, get_access_token, add_formatted_text_to_page
 
 DEFAULT_ACCOUNT_ID = 1
@@ -168,8 +169,9 @@ def resolve_links(body_data):
 async def send_to_onenote(request: Request):
     raw_body = await request.body()
     body_json = json.loads(raw_body.decode("utf-8"))
-    body_data = resolve_links(body_json)
-    happened_at = parse(body_data["happened_at"])
+    markdown_content = parse_embeds_to_markdown(body_json['html'])
+    happened_at = parse(body_json["happened_at"])
+    summary = body_json["summary"]
 
     onenote_ids = get_onenote_default_ids()
     access_token = get_access_token()
@@ -183,10 +185,10 @@ async def send_to_onenote(request: Request):
     new_page_id = retry_get_new_page_id(duplicate_response, access_token)
 
     logger.info(f"New page id: {new_page_id}")
-    title = f"{happened_at.strftime('%Y-%m-%d')} - {body_data['summary']}"
+    title = f"{happened_at.strftime('%Y-%m-%d')} - {summary}"
     logger.info(f"Adding to page {new_page_id} with title {title} - waiting 10 seconds first")
     time.sleep(10)
-    add_text_response = add_formatted_text_to_page(new_page_id, body_data["content"], title, access_token)
+    add_text_response = add_formatted_text_to_page(new_page_id, markdown_content, title, access_token)
     if add_text_response is not None:
         return JSONResponse(content={"page_id": new_page_id}, status_code=status.HTTP_200_OK)
     else:

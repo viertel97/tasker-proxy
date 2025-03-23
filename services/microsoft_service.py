@@ -124,7 +124,7 @@ def add_formatted_text_to_page(page_id, text, title, access_token):
         'action': 'replace',
         'content': title
     }
-
+    
     response = requests.patch(url, headers=headers, json=[payload, another_payload])
     logger.info(response.text)
     if response.status_code == 204:

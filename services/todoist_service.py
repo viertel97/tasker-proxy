@@ -25,30 +25,30 @@ logger = setup_logging(__name__)
 
 async def add_book_finished_task(item: reading_session):
     task = TODOIST_API.add_task(
-        "'{other}' in Zotero & Obsidian einpflegen".format(other=item.title), labels=["Digital"]
+        "'{other}' in Zotero & Obsidian einpflegen".format(other=item.title), labels=["Digital", "filtered"]
     )
     move_item_to_project(task.id, "2244725398")
     update_due(task.id, due={"string": "Tomorrow"})
 
     if type(item) is reading_session:
         task = TODOIST_API.add_task(
-            "eBook Reader updaten", labels=["Digital"]
+            "eBook Reader updaten", labels=["Digital", "filtered"]
         )
     else:
         task = TODOIST_API.add_task(
-            "Hörbücher updaten + in einzelne Kapitel aufteilen + PDF runterladen", labels=["Digital"]
+            "Hörbücher updaten + in einzelne Kapitel aufteilen + PDF runterladen", labels=["Digital", "filtered"]
         )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
 
     task = TODOIST_API.add_task(
-        "Aus Obsidian-Datei für '{other}' Tasks generieren".format(other=item.title), labels=["Digital"]
+        "Aus Obsidian-Datei für '{other}' Tasks generieren".format(other=item.title), labels=["Digital", "filtered"]
     )
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
 
     task = TODOIST_API.add_task(
-        f"Analyse über '{item.title}' zu Cubox hinzufügen und geg. lesen", labels=["Digital"])
+        f"Analyse über '{item.title}' zu Cubox hinzufügen und geg. lesen", labels=["Digital", "filtered"])
     update_due(task.id, due={"string": "Tomorrow"})
     move_item_to_project(task.id, "2244725398")
 
@@ -99,7 +99,7 @@ async def complete_task(selected_service):
 
 async def add_guided_meditation_task(guided_meditation_name):
     item = TODOIST_API.add_task(
-        "Guided Meditation '{name}' nacharbeiten".format(name=guided_meditation_name), labels=["Digital"]
+        "Guided Meditation '{name}' nacharbeiten".format(name=guided_meditation_name), labels=["Digital", "filtered"]
     )
     move_item_to_project(item.id, "2244725398")
     update_due(item.id, due={"string": "Tomorrow"})
@@ -124,7 +124,7 @@ async def add_zotero_task(item: zotero_task):
         "string": "tomorrow",
         "timezone": None,
     }
-    item = TODOIST_API.add_task(message, labels=["Digital"])
+    item = TODOIST_API.add_task(message, labels=["Digital", "filtered"])
     move_item_to_project(item.id, "2281154095")
     update_due(item.id, due=due, add_reminder=True)
 

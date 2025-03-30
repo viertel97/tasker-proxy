@@ -158,43 +158,43 @@ def update_reading_page_finished(item: reading_session):
     r = requests.post(
         url,
         data=json.dumps(data),
-        headers=HEADERS,
-    ).json()
-    if "results" in r.keys() and len(r["results"]) > 0:
-        if len(r["results"]) > 1:
-            logger.warning(
-                "more than one book with '{title}' was found on Reading List".format(
-                    title=item.title
+        headers=HEADERS)
+    try:
+        r = r.json()
+        if "results" in r.keys() and len(r["results"]) > 0:
+            if len(r["results"]) > 1:
+                logger.warning(
+                    "more than one book with '{title}' was found on Reading List".format(
+                        title=item.title
+                    )
+                )
+                return
+            end = datetime.today().strftime("%Y-%m-%d")
+            url = base_url + "pages/" + r["results"][0]["id"]
+            data = {
+                "properties": {
+                    "Dates Read": {
+                        "date": {
+                            "start": r["results"][0]["properties"]["Dates Read"]["date"][
+                                "start"
+                            ],
+                            "end": end,
+                        }
+                    },
+                },
+            }
+            r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
+            logger.info(
+                "book with '{title}' was updated with 'Dates Read'-end at {end}".format(
+                    title=item.title, end=end
                 )
             )
-            return
-        end = datetime.today().strftime("%Y-%m-%d")
-        url = base_url + "pages/" + r["results"][0]["id"]
-        data = {
-            "properties": {
-                "Dates Read": {
-                    "date": {
-                        "start": r["results"][0]["properties"]["Dates Read"]["date"][
-                            "start"
-                        ],
-                        "end": end,
-                    }
-                },
-            },
-        }
-        r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
-        logger.info(
-            "book with '{title}' was updated with 'Dates Read'-end at {end}".format(
-                title=item.title, end=end
+        else:
+            logger.error(
+                "book with '{title}' was not found on Reading List".format(title=item.title)
             )
-        )
-    else:
-        logger.error(
-            "book with '{title}' was not found on Reading List".format(title=item.title)
-        )
-        raise Exception(
-            "book with '{title}' was not found on Reading List".format(title=item.title)
-        )
+    except Exception as e:
+        logger.error(e)
 
 
 async def track_habit(selected_service):

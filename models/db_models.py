@@ -7,59 +7,54 @@ from pydantic import BaseModel
 from models.default_model import DefaultModel
 
 logger.add(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__))
-        + "/logs/"
-        + os.path.basename(__file__)
-        + ".log"
-    ),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
+	os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
+	format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
+	backtrace=True,
+	diagnose=True,
 )
 
 
 class Exercise(DefaultModel):
-    type: str
+	type: str
 
 
 class meditation_session(Exercise):
-    selected_duration: int
-    guided_name: Optional[str] = None
+	selected_duration: int
+	guided_name: Optional[str] = None
 
 
 class yoga_session(Exercise):
-    pass
+	pass
 
 
 class reading_session(DefaultModel):
-    title: str
-    page_old: int
-    page_new: int
-    reading_type: str
-    finished: Optional[bool] = False
+	title: str
+	page_old: int
+	page_new: int
+	reading_type: str
+	finished: Optional[bool] = False
 
 
 class new_book(BaseModel):
-    title: str
-    type: str
+	title: str
+	type: str
 
 
 class timer(DefaultModel):
-    context: str
+	context: str
 
 
 class app_usage(DefaultModel):
-    app: str
+	app: str
 
 
 class power(BaseModel):
-    type: str
+	type: str
 
 
 class drug_session(BaseModel):
-    beer: Optional[str]
-    wine: Optional[str]
-    liquor: Optional[str]
-    other: Optional[str]
-    water: Optional[str]
+	beer: Optional[str]
+	wine: Optional[str]
+	liquor: Optional[str]
+	other: Optional[str]
+	water: Optional[str]

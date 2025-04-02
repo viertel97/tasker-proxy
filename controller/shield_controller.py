@@ -13,10 +13,10 @@ router = APIRouter(tags=["shield"])
 @logger.catch
 @router.post("/shield/apps")
 async def track_timer(item: app_usage):
-    add_app_usage(item)
+	add_app_usage(item)
 
 
 @logger.catch
 @router.post("/shield/power")
 async def track_start_stop(item: power):
-    add_start_stop(item)
+	add_start_stop(item)

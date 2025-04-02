@@ -2,7 +2,8 @@ from fastapi import APIRouter, Request
 from quarter_lib.logging import setup_logging
 
 from proxies.telegram_proxy import log_to_telegram
-from services.ght_service import add_ght_entry, add_wellbeing_entry, get_ght_questions
+from services.ght_service import add_ght_entry, add_wellbeing_entry, get_ght_questions, \
+    create_obsidian_file_from_ght_data
 
 logger = setup_logging(__file__)
 
@@ -15,11 +16,19 @@ router = APIRouter(tags=["ght"])
 async def get_body(request: Request):
     ght_data = await request.json()
     logger.info("service: " + str(ght_data))
-    error_count, success_count, task_count = add_ght_entry(ght_data)
+    error_count, success_count, task_count, result_df, timestamp, ght_type = add_ght_entry(ght_data)
     log_to_telegram(
         f"Added {success_count} entries to GHT and created {task_count} tasks. {error_count} errors occurred.",
         logger,
     )
+
+    create_obsidian_file_from_ght_data(result_df, ght_type, timestamp)
+
+    log_to_telegram(
+        f"Created Obsidian file from GHT data for {ght_type} at {timestamp}.",
+        logger,
+    )
+
     return {"error_count": error_count, "success_count": success_count}
 
 

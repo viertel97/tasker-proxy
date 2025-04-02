@@ -1,20 +1,20 @@
 import ast
 import json
-import re
-from datetime import datetime
 
+from datetime import datetime
+import re
 import pandas as pd
 import pandas.errors
 import pymysql
 from croniter import croniter
 from dateutil import parser
-from pandas import concat
 from quarter_lib.logging import setup_logging
 from sqlalchemy import text
 
 from config.queries import ght_get_old_answers_query
 from helper.db_helper import close_server_connection, create_server_connection
 from helper.web_helper import get_rework_events_from_web
+from services.github_service import add_files_to_repository
 from services.google_service import get_rework_events_from_google_calendar
 from services.todoist_service import add_task
 
@@ -131,7 +131,7 @@ def add_previous_answers_to_ght(df):
                     },
                     index=[index],
                 )
-                df = concat([df.iloc[:index], line, df.iloc[index:]]).reset_index(
+                df = pd.concat([df.iloc[:index], line, df.iloc[index:]]).reset_index(
                     drop=True
                 )
     return df
@@ -203,7 +203,7 @@ def get_exercises(type):
     return return_list
 
 
-def add_ght_entry(result_dict: dict):
+def add_ght_entry(result_dict: dict) -> tuple[int, int, int, pd.DataFrame, datetime, str]:
     success_count, error_count, task_count = 0, 0, 0
     connection = create_server_connection()
     ght_type = result_dict.pop("type")
@@ -213,6 +213,7 @@ def add_ght_entry(result_dict: dict):
     result_df = pd.DataFrame(result_dict.items(), columns=["code", "value"])
     result_df = result_df.merge(df, how="left", on="code")
     raw_connection = connection.raw_connection()
+
     for index, row in result_df.iterrows():
         if isinstance(row["value"], str) and ("!" in row["value"] or "?" in row["value"]):
             add_task(
@@ -242,7 +243,47 @@ def add_ght_entry(result_dict: dict):
             continue
 
     close_server_connection(connection)
-    return error_count, success_count, task_count
+    return error_count, success_count, task_count, result_df, timestamp, ght_type
+
+def replace_yes_no(value):
+    if isinstance(value, str):
+        if re.fullmatch(r"yes|no", value, re.IGNORECASE):
+            return "true" if value.lower() == "yes" else "false"
+        return value
+    return value
+
+def replace_default_type(value):
+    match value:
+        case "yes" | "no":
+            return "text"
+        case _:
+            return value
+
+def create_obsidian_file_from_ght_data(df: pd.DataFrame, ght_type: str, timestamp: datetime):
+    df = df.sort_values(by="question_order")
+    df = df.query("active == 1")
+    df["value"] = df["value"].apply(replace_yes_no)
+    df["message"] = df["message"].str.strip()
+    df = df.replace({"code": {" ": "-", "_": "-"}}, regex=True)
+    df["code"] = "code-" + df["code"]
+    df["default_type"] = df["default_type"].apply(replace_default_type)
+
+    yaml_metadata = "---\n"
+    yaml_metadata += f"timestamp: {timestamp.strftime('%Y-%m-%dT%H:%M:%S')}\n"
+    for _, row in df.iterrows():
+        yaml_metadata += f"{row['code']}: {row['value']}\n"
+    yaml_metadata += "---\n\n"
+
+    markdown_body = ""
+    for _, row in df.iterrows():
+        markdown_body += f"**{row['message']}** ({row['default_type']}):\n`= this.{row['code']}`\n^{row['code']}\n\n"
+
+    file = {
+        "content": yaml_metadata + markdown_body,
+        "filename": f"{timestamp.strftime('%Y-%m-%d-%H-%M-%S')}-{ght_type.replace('/', '-')}.md",
+    }
+
+    add_files_to_repository([file], f"Added GHT file for {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",f"0300_Spaces/GHT/{timestamp.strftime('%Y')}/{timestamp.strftime('%m-%B')}/")
 
 
 def add_wellbeing_entry(item: dict):

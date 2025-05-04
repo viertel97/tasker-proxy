@@ -203,7 +203,13 @@ def add_ght_entry(result_dict: dict) -> tuple[int, int, int, pd.DataFrame, datet
 
 	for index, row in result_df.iterrows():
 		if isinstance(row["value"], str) and ("!" in row["value"] or "?" in row["value"]):
-			add_task(f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", labels=["Digital", "GHT"])
+			labels = ["Digital", "GHT"]
+			if row["value"].startswith("!"):
+				tags = re.findall(r"@\w+", text)
+				if tags:
+					labels = [x.replace("@", "") for x in tags]
+					labels.extend(tags)
+			add_task(f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", labels=list(set(labels)))
 			task_count += 1
 		try:
 			with raw_connection.cursor() as cursor:

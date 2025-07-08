@@ -12,4 +12,4 @@ router = APIRouter(tags=["drug_session"])
 @logger.catch
 @router.post("/drugs/session")
 async def track_drug_session(item: drug_session):
-    add_drug_session(item)
+	add_drug_session(item)

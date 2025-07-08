@@ -11,4 +11,4 @@ router = APIRouter(tags=["timer"])
 @logger.catch
 @router.post("/habit-tracker/timer")
 async def track_timer(item: timer):
-    add_timer(item)
+	add_timer(item)

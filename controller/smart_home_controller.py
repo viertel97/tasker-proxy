@@ -3,8 +3,8 @@ import os
 from fastapi import APIRouter
 from loguru import logger
 
-from services.home_assistant_service import add_washer_finished_task, add_dishwasher_finished_task
 from services.todoist_service import close_task_by_title
+from services.home_assistant_service import add_dishwasher_finished_task, add_washer_finished_task
 
 logger.add(
     os.path.join(

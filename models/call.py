@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class call(BaseModel):
-    timestamp: datetime
-    message: str
-    contact: str
-    incoming: bool
+	timestamp: datetime
+	message: str
+	contact: str
+	incoming: bool

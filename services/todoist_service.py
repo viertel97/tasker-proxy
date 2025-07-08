@@ -97,6 +97,9 @@ async def complete_task(selected_service):
     complete_task_by_title(selected_service)
     await send_to_telegram("Task completed: " + selected_service)
 
+async def close_task_by_title(selected_service):
+    TODOIST_API.close_task(selected_service)
+
 async def add_guided_meditation_task(guided_meditation_name):
     item = TODOIST_API.add_task(
         "Guided Meditation '{name}' nacharbeiten".format(name=guided_meditation_name), labels=["Digital", "filtered"]

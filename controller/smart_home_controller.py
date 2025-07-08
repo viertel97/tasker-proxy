@@ -2,9 +2,9 @@ import os
 
 from fastapi import APIRouter
 from loguru import logger
-from quarter_lib_old.todoist import complete_task_by_title
 
 from services.home_assistant_service import add_washer_finished_task, add_dishwasher_finished_task
+from services.todoist_service import close_task_by_title
 
 logger.add(
     os.path.join(
@@ -25,7 +25,8 @@ router = APIRouter(tags=["smart_home"])
 @router.post("/smart_home/washer_finished")
 async def washer_finished():
     logger.info("washer_finished")
-    complete_task_by_title("Wäsche waschen")
+    # complete_task_by_title("Wäsche waschen")
+    close_task_by_title("Wäsche waschen")
     await add_washer_finished_task()
 
 

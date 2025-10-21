@@ -1,14 +1,12 @@
 from datetime import datetime, time, timedelta
+from itertools import chain
 
 import pandas as pd
 from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.todoist import (
-	complete_task_by_title,
-	move_item_to_project,
-	update_due,
-)
+from quarter_lib.todoist import move_item_to_project, update_due, complete_task_by_title
+
 from todoist_api_python.api import TodoistAPI
 
 from models.db_models import new_book, reading_session
@@ -20,84 +18,83 @@ END_TIME = time(hour=6, minute=0, second=0)
 TODOIST_TOKEN = get_secrets(["todoist/token"])
 TODOIST_API = TodoistAPI(TODOIST_TOKEN)
 
+THIS_WEEK_PROJECT_ID = "6Crcr3mXxVh6f97J"
+
 logger = setup_logging(__name__)
 
 
+def get_from_iterable(iterable):
+	return list(chain.from_iterable(iterable))
+
+
 async def add_book_finished_task(item: reading_session):
-	task = TODOIST_API.add_task("'{other}' in Zotero & Obsidian einpflegen".format(other=item.title), labels=["Digital", "filtered"])
-	move_item_to_project(task.id, "2244725398")
-	update_due(task.id, due={"string": "Tomorrow"})
+	task = TODOIST_API.add_task(
+		"'{other}' in Zotero & Obsidian einpflegen".format(other=item.title),
+		labels=["Digital", "filtered"],
+		project_id=THIS_WEEK_PROJECT_ID,
+		due_string="Tomorrow",
+	)
 
 	if type(item) is reading_session:
 		task = TODOIST_API.add_task("eBook Reader updaten", labels=["Digital", "filtered"])
 	else:
-		task = TODOIST_API.add_task("Hörbücher updaten + in einzelne Kapitel aufteilen + PDF runterladen", labels=["Digital", "filtered"])
-	update_due(task.id, due={"string": "Tomorrow"})
-	move_item_to_project(task.id, "2244725398")
+		task = TODOIST_API.add_task(
+			"Hörbücher updaten + in einzelne Kapitel aufteilen + PDF runterladen",
+			labels=["Digital", "filtered"],
+			project_id=THIS_WEEK_PROJECT_ID,
+			due_string="Tomorrow",
+		)
 
 	task = TODOIST_API.add_task(
-		"Aus Obsidian-Datei für '{other}' Tasks generieren".format(other=item.title), labels=["Digital", "filtered"]
+		"Aus Obsidian-Datei für '{other}' Tasks generieren".format(other=item.title),
+		labels=["Digital", "filtered"],
+		project_id=THIS_WEEK_PROJECT_ID,
+		due_string="Tomorrow",
 	)
-	update_due(task.id, due={"string": "Tomorrow"})
-	move_item_to_project(task.id, "2244725398")
 
-	task = TODOIST_API.add_task(f"Analyse über '{item.title}' zu Cubox hinzufügen und geg. lesen", labels=["Digital", "filtered"])
-	update_due(task.id, due={"string": "Tomorrow"})
-	move_item_to_project(task.id, "2244725398")
+	task = TODOIST_API.add_task(
+		f"Analyse über '{item.title}' zu Cubox hinzufügen und geg. lesen",
+		labels=["Digital", "filtered"],
+		project_id=THIS_WEEK_PROJECT_ID,
+		due_string="Tomorrow",
+	)
 
 
 async def add_task_with_check(title, due=None, project_id=None, labels=None):
-	tasks = TODOIST_API.get_tasks(project_id=project_id)
+	tasks = get_from_iterable(TODOIST_API.get_tasks(project_id=project_id))
 	if len(tasks) > 0:
 		found_tasks = [task for task in tasks if task.content == title]
 		if len(found_tasks) > 0:
 			for task in found_tasks:
 				TODOIST_API.delete_task(task.id)
-	if labels:
-		task = TODOIST_API.add_task(title, labels=labels)
-	else:
-		task = TODOIST_API.add_task(title)
-	if project_id:
-		move_item_to_project(task.id, project_id)
-	if due:
-		update_due(task.id, due={"string": due})
-	return task
-
-
-def add_task(title: str, due=None, project_id=None, labels=None):
-	if labels:
-		task = TODOIST_API.add_task(title, labels=labels)
-	else:
-		task = TODOIST_API.add_task(title)
-	if project_id:
-		move_item_to_project(task.id, project_id)
-	if due:
-		update_due(task.id, due={"string": due})
+	task = TODOIST_API.add_task(title, labels=labels, due_string=due, project_id=project_id)
 	return task
 
 
 async def add_book_reminder(item: new_book):
 	item = TODOIST_API.add_task(
 		"'{title}' in [Reading List](https://www.notion.so/e88940d2346e4f66a8cec95faa11dcfb) pflegen".format(title=item.title),
+		project_id=THIS_WEEK_PROJECT_ID,
+		due_string="Tomorrow",
 	)
-	move_item_to_project(item.id, "2244725398")
-	update_due(item.id, due={"string": "Tomorrow"})
 
 
 async def complete_task(selected_service):
-	complete_task_by_title(selected_service)
+	await complete_task_by_title(selected_service)
 	await send_to_telegram("Task completed: " + selected_service)
 
 
 async def close_task_by_title(selected_service):
-    TODOIST_API.close_task(selected_service)
+	TODOIST_API.complete_task(selected_service)
+
 
 async def add_guided_meditation_task(guided_meditation_name):
 	item = TODOIST_API.add_task(
-		"Guided Meditation '{name}' nacharbeiten".format(name=guided_meditation_name), labels=["Digital", "filtered"]
+		"Guided Meditation '{name}' nacharbeiten".format(name=guided_meditation_name),
+		labels=["Digital", "filtered"],
+		project_id=THIS_WEEK_PROJECT_ID,
+		due_string="Tomorrow",
 	)
-	move_item_to_project(item.id, "2244725398")
-	update_due(item.id, due={"string": "Tomorrow"})
 
 
 async def add_zotero_task(item: zotero_task):
@@ -113,24 +110,12 @@ async def add_zotero_task(item: zotero_task):
 		time=item.timestamp.strftime("%H:%M"),
 	)
 
-	due = {
-		"date": (datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d"),
-		"is_recurring": False,
-		"lang": "en",
-		"string": "tomorrow",
-		"timezone": None,
-	}
-	item = TODOIST_API.add_task(message, labels=["Digital", "filtered"])
-	move_item_to_project(item.id, "2281154095")
-	update_due(item.id, due=due, add_reminder=True)
-
-
-async def update_due_date(task_id, due):
-	return update_due(task_id, due)
+	item = TODOIST_API.add_task(message, labels=["Digital", "filtered"], project_id=THIS_WEEK_PROJECT_ID, due_string="Tomorrow")
+	return item
 
 
 def get_rework_tasks():
-	df_items = pd.DataFrame([item.__dict__ for item in TODOIST_API.get_tasks(project_id="2244725398")])
+	df_items = pd.DataFrame([item.__dict__ for item in get_from_iterable(TODOIST_API.get_tasks(project_id=THIS_WEEK_PROJECT_ID))])
 	df_items = df_items[df_items.content.str.contains("nacharbeiten")]
 	df_items.content = df_items.content.str.replace(" - nacharbeiten & Tracker pflegen", "")
 	df_items.content = df_items.content.str.replace(" nacharbeiten", "")

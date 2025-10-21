@@ -2,7 +2,7 @@ import os
 
 from fastapi import APIRouter, Body, Request
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.todoist import complete_task_by_title
+from quarter_lib.todoist import complete_task_by_title
 
 from services.sqlite_service import update_koreader_tables
 from services.telegram_service import send_to_telegram
@@ -23,7 +23,7 @@ async def upload_file(request: Request, file: bytes = Body("binary")):
 
 	update_result_koreader_book, update_result_koreader_page_stat_data = update_koreader_tables(file_path)
 	if update_result_koreader_book > 0 or update_result_koreader_page_stat_data > 0:
-		complete_task_by_title("Lesen")
+		await complete_task_by_title("Lesen")
 		await send_to_telegram(
 			"Reading session added to database with {} books and {} page_stat_data rows".format(
 				update_result_koreader_book, update_result_koreader_page_stat_data

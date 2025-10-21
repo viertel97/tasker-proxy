@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pymysql
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.database import create_monica_server_connection
+from quarter_lib.monica import create_monica_server_connection
 
 from helper.db_helper import close_server_connection
 from models.call import call

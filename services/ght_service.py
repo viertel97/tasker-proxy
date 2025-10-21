@@ -16,7 +16,7 @@ from helper.db_helper import close_server_connection, create_server_connection
 from helper.web_helper import get_rework_events_from_web
 from services.github_service import add_files_to_repository
 from services.google_service import get_rework_events_from_google_calendar
-from services.todoist_service import add_task
+from services.todoist_service import TODOIST_API
 
 logger = setup_logging(__file__)
 
@@ -209,7 +209,7 @@ def add_ght_entry(result_dict: dict) -> tuple[int, int, int, pd.DataFrame, datet
 				if tags:
 					labels = [x.replace("@", "") for x in tags]
 					labels.extend(tags)
-			add_task(f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", labels=list(set(labels)))
+			TODOIST_API.add_task(f"{timestamp}: {row['message']} (code: {row['code']}) -> value: '{row['value']}'", labels=list(set(labels)))
 			task_count += 1
 		try:
 			with raw_connection.cursor() as cursor:

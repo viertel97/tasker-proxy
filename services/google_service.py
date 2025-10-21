@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from dateutil import parser
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.google import build_calendar_service, get_dict
+from quarter_lib.google_calendar import build_calendar_service, get_dict
 
 logger = setup_logging(__file__)
 

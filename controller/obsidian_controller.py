@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.database import create_monica_server_connection
+from quarter_lib.monica import create_monica_server_connection
 
 from config.queries import activity_query
 from helper.web_helper import get_onenote_default_ids

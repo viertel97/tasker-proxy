@@ -3,7 +3,7 @@ import re
 
 from fastapi import APIRouter, Request
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.easy_voice_recorder import get_logs_from_recording
+from quarter_lib.voice_recorder import get_logs_from_recording
 
 from helper.web_helper import (
 	get_habit_tracker_mapping_from_web,

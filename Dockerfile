@@ -6,7 +6,7 @@ COPY . .
 
 COPY requirements.txt .
 
-RUN pip install  --extra-index-url https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure.com/viertel/Quarter-Lib-Old/_packaging/Quarter-Lib-Old/pypi/simple/ -r requirements.txt
+RUN pip install -r requirements.txt
 
 ENV IS_CONTAINER=True
 

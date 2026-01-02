@@ -19,6 +19,7 @@ TODOIST_TOKEN = get_secrets(["todoist/token"])
 TODOIST_API = TodoistAPI(TODOIST_TOKEN)
 
 THIS_WEEK_PROJECT_ID = "6Crcr3mXxVh6f97J"
+HABITS_PROJECT_ID = "6Crcr3mXxHJC2cRQ"
 
 logger = setup_logging(__name__)
 
@@ -79,8 +80,9 @@ async def add_book_reminder(item: new_book):
     )
 
 
+
 async def complete_task_by_title(selected_service):
-    df_items = pd.DataFrame([item.__dict__ for item in get_from_iterable(TODOIST_API.get_tasks())])
+    df_items = pd.DataFrame([item.__dict__ for item in get_from_iterable(TODOIST_API.get_tasks(project_id=HABITS_PROJECT_ID))])
     item = df_items[df_items.content == selected_service].sample(1).iloc[0]
     logger.info(item)
 

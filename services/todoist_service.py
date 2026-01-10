@@ -18,8 +18,7 @@ END_TIME = time(hour=6, minute=0, second=0)
 TODOIST_TOKEN = get_secrets(["todoist/token"])
 TODOIST_API = TodoistAPI(TODOIST_TOKEN)
 
-THIS_WEEK_PROJECT_ID = "6Crcr3mXxVh6f97J"
-HABITS_PROJECT_ID = "6Crcr3mXxHJC2cRQ"
+THIS_WEEK_PROJECT_ID, HABITS_PROJECT_ID, LOVE_PROJECT_ID =  "6Crcr3mXxVh6f97J", "6Crcr3mXxHJC2cRQ", "6RWqqG4HgVVvg5rP"
 
 logger = setup_logging(__name__)
 
@@ -80,10 +79,29 @@ async def add_book_reminder(item: new_book):
     )
 
 
+async def complete_task_by_title(selected_service, project_ids=None):
+    if project_ids is None:
+        project_ids = [HABITS_PROJECT_ID, LOVE_PROJECT_ID]
 
-async def complete_task_by_title(selected_service):
-    df_items = pd.DataFrame([item.__dict__ for item in get_from_iterable(TODOIST_API.get_tasks(project_id=HABITS_PROJECT_ID))])
-    item = df_items[df_items.content == selected_service].sample(1).iloc[0]
+    # Get tasks from all specified projects
+    all_tasks = []
+    for project_id in project_ids:
+        tasks = get_from_iterable(TODOIST_API.get_tasks(project_id=project_id))
+        all_tasks.extend(tasks)
+
+    df_items = pd.DataFrame([item.__dict__ for item in all_tasks])
+
+    if df_items.empty:
+        logger.warning(f"No tasks found in projects: {project_ids}")
+        return
+
+    matching_items = df_items[df_items.content == selected_service]
+
+    if matching_items.empty:
+        logger.warning(f"No task found with title: {selected_service}")
+        return
+
+    item = matching_items.sample(1).iloc[0]
     logger.info(item)
 
     TODOIST_API.complete_task(str(item["id"]))

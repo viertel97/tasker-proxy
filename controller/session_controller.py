@@ -60,7 +60,7 @@ async def habit_tracker(service: str):
 	logger.info("habit-tracker: " + service)
 	service = habit_tracker_mapping_dict[service]
 	await track_habit(service)
-	await complete_task(proxy_mapping_dict["sport"])
+	# await complete_task(proxy_mapping_dict["sport"])
 
 	return {"message": "Task added in background"}
 
@@ -72,7 +72,7 @@ async def track_meditation(item: meditation_session):
 	logger.info("error during DB insert: " + str(error_flag))
 	if not error_flag:
 		selected_service = proxy_mapping_dict["meditation-evening"]
-		await complete_task(selected_service)
+		# await complete_task(selected_service)
 		if item.type == "Guided" and (item.guided_name is not None or item.guided_name != ""):
 			await add_guided_meditation_task(item.guided_name)
 		return {"message": "Task completed in background"}
@@ -95,7 +95,7 @@ async def track_reading(item: reading_session):
 		await add_book_finished_task(item)
 		update_reading_page_finished(item)
 	selected_service = proxy_mapping_dict["reading"]
-	await complete_task(selected_service)
+	# await complete_task(selected_service)
 	return {"message": "Reading session added in the background"}
 
 

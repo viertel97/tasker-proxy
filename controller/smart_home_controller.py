@@ -26,12 +26,12 @@ router = APIRouter(tags=["smart_home"])
 async def washer_finished():
     logger.info("washer_finished")
     # complete_task_by_title("Wäsche waschen")
-    await close_task_by_title("Wäsche waschen")
-    await add_washer_finished_task()
+    # await close_task_by_title("Wäsche waschen")
+    # await add_washer_finished_task()
 
 
 @logger.catch
 @router.post("/smart_home/dishwasher_finished")
 async def dishwasher_finished():
     logger.info("dishwasher_finished")
-    await add_dishwasher_finished_task()
+    # await add_dishwasher_finished_task()
